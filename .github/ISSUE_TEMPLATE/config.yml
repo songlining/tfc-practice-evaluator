@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: HashiCorp Validated Designs
+    url: https://developer.hashicorp.com/validated-designs
+    about: Learn more about HVD best practices
+  - name: Terraform Cloud Documentation
+    url: https://developer.hashicorp.com/terraform/cloud-docs
+    about: Official TFC documentation
