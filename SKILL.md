@@ -15,6 +15,45 @@ This skill evaluates a customer's HCP Terraform (Terraform Cloud) or Terraform E
 - **Prioritized recommendations** with business value justification
 - **Roadmap** for maturity progression
 
+## Operating Modes
+
+This skill supports **two operating modes** to accommodate customers with and without access to a business-approved LLM:
+
+### Mode 1: Self-Service (Customer has LLM access)
+
+The customer runs everything end-to-end on their own machine using their own LLM/agent:
+
+```
+Customer Environment:
+  1. Set credentials (TFC_TOKEN, TFC_ORG)
+  2. Run /tfc-practice-evaluator
+  3. Skill collects data → analyzes → generates report.md + roadmap.md
+  4. Done — all data stays in customer environment
+```
+
+### Mode 2: SE-Assisted (Customer has NO LLM access)
+
+The customer collects data, obfuscates it, and sends it to the HashiCorp Sales Engineer (SE) for analysis:
+
+```
+Customer Environment:              SE Environment:
+  1. Set credentials                  
+  2. Run collect_tfc_data.py          
+  3. Run obfuscate_data.py            
+     ├─ data_obfuscated.json ──────► 4. SE receives obfuscated data
+     └─ obfuscation_map.json          5. SE runs the skill analysis
+        (KEEP PRIVATE)                6. SE sends back report.md + roadmap.md
+                                         (with obfuscated names)
+  7. Place report files in             
+     assessment/ directory             
+  8. Run deobfuscate_report.py         
+     ├─ report.md (real names)         
+     └─ roadmap.md (real names)        
+  9. Done                              
+```
+
+**Privacy guarantee**: The obfuscation uses SHA-256 hashing with a random salt. The `obfuscation_map.json` (which maps hashes back to real names) never leaves the customer's environment. Even if a third party intercepts the obfuscated data, they cannot determine any business-specific information — only the aggregate metrics (counts, percentages, versions) are visible.
+
 ## Implementation
 
 This skill includes **production-ready, battle-tested scripts** in the `scripts/` directory:
@@ -33,7 +72,22 @@ This skill includes **production-ready, battle-tested scripts** in the `scripts/
 - Optimized for Unix-like systems
 - Requires: `curl`, `jq`
 
-Both scripts have been validated against production TFC organizations (including `hashicorp-wwtfo-demo-platform-prod` with 41 modules, 4 workspaces) and handle:
+### Data Privacy Scripts (Mode 2: SE-Assisted)
+
+**`scripts/obfuscate_data.py`**
+- Pure Python 3.6+ (no external dependencies)
+- SHA-256 hashing with random salt for each session
+- Obfuscates all business-identifiable names (workspaces, teams, modules, projects, policies, VCS repos, organization)
+- Preserves metrics/counts (the data needed for analysis)
+- Outputs: `data_obfuscated.json` (safe to share) + `obfuscation_map.json` (keep private)
+
+**`scripts/deobfuscate_report.py`**
+- Pure Python 3.6+ (no external dependencies)
+- Replaces obfuscated tokens in report/roadmap files with real names
+- Uses longest-match-first replacement to avoid partial substitutions
+- Processes all `.md` files in the assessment directory
+
+Both data collection scripts have been validated against production TFC organizations (including `hashicorp-wwtfo-demo-platform-prod` with 41 modules, 4 workspaces) and handle:
 - ✅ Pagination automatically (follows `links.next`)
 - ✅ Rate limiting gracefully (fail-safe on 429 errors)
 - ✅ Authentication validation
@@ -120,7 +174,9 @@ A **Team token** with organization-level read access is recommended.
 
 ## Quick Start
 
-### For Terraform Cloud (HCP Terraform)
+### Mode 1: Self-Service (Customer Has LLM Access)
+
+#### For Terraform Cloud (HCP Terraform)
 
 ```bash
 # 1. Set environment variables
@@ -138,7 +194,7 @@ export OUTPUT_DIR="./assessment"
 # - Generate report.md and roadmap.md
 ```
 
-### For Terraform Enterprise
+#### For Terraform Enterprise
 
 ```bash
 # 1. Set environment variables
@@ -151,7 +207,7 @@ export OUTPUT_DIR="./assessment"
 /tfc-practice-evaluator
 ```
 
-### Manual Script Execution (for testing)
+#### Manual Script Execution (for testing)
 
 ```bash
 # Python version
@@ -164,6 +220,44 @@ python3 scripts/collect_tfc_data.py
 ```
 
 **Interactive Mode**: If you don't set these variables beforehand, the skill will prompt you for the required information during execution.
+
+### Mode 2: SE-Assisted (Customer Has No LLM Access)
+
+#### Step A: Customer Collects & Obfuscates Data
+
+```bash
+# 1. Set environment variables
+export TFC_TOKEN="your-team-token"
+export TFC_ORG="your-organization"
+export OUTPUT_DIR="./assessment"
+
+# Optional: For Terraform Enterprise
+export TFC_API_BASE="https://tfe.example.com/api/v2"
+
+# 2. Collect data
+cd skills/tfc-practice-evaluator
+python3 scripts/collect_tfc_data.py
+
+# 3. Obfuscate data (hashes all business names)
+python3 scripts/obfuscate_data.py
+
+# 4. Send ONLY data_obfuscated.json to your HashiCorp SE
+#    KEEP obfuscation_map.json PRIVATE — do NOT share it
+```
+
+#### Step B: SE Runs Analysis
+
+The SE places `data_obfuscated.json` as `assessment/data.json` and runs the skill (Mode 1) to generate `report.md` and `roadmap.md`. The SE sends these report files back to the customer.
+
+#### Step C: Customer Deobfuscates Reports
+
+```bash
+# 1. Place report.md and roadmap.md from your SE into assessment/
+# 2. Run deobfuscation (replaces hashed names with real names)
+python3 scripts/deobfuscate_report.py
+
+# 3. Open assessment/report.md and assessment/roadmap.md — they now contain your real names
+```
 
 ## What Gets Evaluated
 
@@ -200,6 +294,8 @@ python3 scripts/collect_tfc_data.py
 - Active workspace percentage
 
 ## Execution Flow
+
+> The execution flow below applies to **Mode 1 (Self-Service)** and to the SE's side in **Mode 2 (SE-Assisted)**. In Mode 2, the SE receives `data_obfuscated.json` and treats it as `assessment/data.json` — the rest of the flow is identical.
 
 ### Step 1: Prerequisite Validation (Main Agent)
 
@@ -625,6 +721,47 @@ Save to assessment/gitops-eval.json. Use ONLY read_file - NO MCP servers.
 - Expect production-grade RBAC (demos often have single team)
 - Flag API-driven architecture as a problem (intentional for automation)
 
+### 9. Data Obfuscation Details (Mode 2)
+
+**What Gets Obfuscated** (business-identifiable information):
+
+| Field | Example Original | Example Obfuscated |
+|-------|------------------|-------------------|
+| Organization name | `acme-corp-prod` | `org-a1b2c3d4e5f6` |
+| Workspace names | `aws-networking-prod` | `ws-f7e8d9c0b1a2` |
+| Workspace IDs | `ws-AbCdEf123456` | `wsid-1a2b3c4d5e6f` |
+| Module names | `terraform-aws-vpc` | `mod-b3c4d5e6f7a8` |
+| Team names | `platform-engineering` | `team-c5d6e7f8a9b0` |
+| Project names | `infrastructure` | `proj-d7e8f9a0b1c2` |
+| Policy set names | `aws-cis-benchmarks` | `ps-e9f0a1b2c3d4` |
+| Variable set names | `aws-credentials` | `vs-f1a2b3c4d5e6` |
+| VCS repo identifiers | `acme/infra-modules` | `repo-a3b4c5d6e7f8` |
+| Descriptions | `Production VPC module` | `desc-b5c6d7e8f9a0` |
+
+**What Gets Preserved** (metrics needed for analysis):
+
+| Field | Reason |
+|-------|--------|
+| `terraform_version` | Version hygiene analysis |
+| `execution_mode` | GitOps maturity scoring |
+| `auto_apply` | Workflow pattern analysis |
+| `speculative_enabled` | PR workflow analysis |
+| `updated_at` | Activity/staleness detection |
+| `locked` | Operational health |
+| Run `status`, `source`, `trigger_reason` | Run pattern analysis |
+| Module `provider`, `version_statuses` | Module maturity scoring |
+| Policy `policy_count`, `workspace_count`, `global`, `kind` | Policy coverage analysis |
+| Team `users_count`, `organization_access`, `visibility` | RBAC analysis |
+| Variable set `global`, `priority`, `workspace_count` | Configuration management analysis |
+| All `metadata` counts | Summary statistics |
+
+**Security Properties:**
+- SHA-256 hashing with a per-session random salt
+- Same name always maps to the same hash within a session (deterministic for consistency)
+- Different sessions produce different hashes (salt changes)
+- The `obfuscation_map.json` never leaves the customer environment
+- Even with the obfuscated data, an attacker cannot reverse the hashes without the salt
+
 ### 9. Report Tailoring Strategies
 
 **For Sales/Pre-Sales:**
@@ -833,10 +970,12 @@ TFC_TIMEOUT=300 /tfc-practice-evaluator
 ```
 tfc-practice-evaluator/
 ├── SKILL.md                          # This file - comprehensive documentation
-├── scripts/                          # Production-ready data collection
+├── scripts/                          # Production-ready scripts
 │   ├── README.md                     # Script usage documentation
-│   ├── collect_tfc_data.py          # Python version (recommended)
-│   └── collect_tfc_data.sh          # Bash version
+│   ├── collect_tfc_data.py          # Data collection - Python (recommended)
+│   ├── collect_tfc_data.sh          # Data collection - Bash
+│   ├── obfuscate_data.py            # Obfuscate data.json for SE-assisted mode
+│   └── deobfuscate_report.py        # Deobfuscate reports after SE analysis
 └── research/                         # Research documents (if present)
     ├── tfc-api.md                    # TFC API capabilities
     ├── hvd-criteria.md               # HVD maturity criteria
@@ -848,6 +987,8 @@ tfc-practice-evaluator/
 Output (created during execution):
 assessment/
 ├── data.json                         # Raw TFC data (87 KB for demo org)
+├── data_obfuscated.json              # Obfuscated data (Mode 2 only, safe to share)
+├── obfuscation_map.json              # Hash-to-name mapping (Mode 2 only, KEEP PRIVATE)
 ├── gitops-eval.json                  # GitOps evaluation results
 ├── pmr-eval.json                     # PMR evaluation results
 ├── policy-eval.json                  # Policy evaluation + gap analysis

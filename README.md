@@ -14,6 +14,13 @@ A Claude AI skill that analyzes your TFC/TFE organization and provides:
 - **Prioritized Recommendations** with business value justification
 - **Roadmap** for maturity progression
 
+## Two Operating Modes
+
+| Mode | Who Runs Analysis | When to Use |
+|------|-------------------|-------------|
+| **Mode 1: Self-Service** | Customer | Customer has a business-approved LLM/agent |
+| **Mode 2: SE-Assisted** | HashiCorp SE | Customer has no LLM access; data is obfuscated for privacy |
+
 ## Quick Install
 
 ### One-liner Installation
@@ -59,7 +66,7 @@ export TFC_ORG="your-organization-name"
 export TFE_URL="https://tfe.example.com"
 ```
 
-### Trigger Phrases
+### Mode 1: Self-Service (Customer Has LLM Access)
 
 Just ask Claude naturally:
 
@@ -69,8 +76,6 @@ Just ask Claude naturally:
 - "How good is my TFC setup?"
 - "TFC best practices review"
 - "TFE maturity assessment"
-
-### Example Session
 
 ```
 You: Evaluate my TFC organization
@@ -93,6 +98,44 @@ Claude: I'll analyze your Terraform Cloud organization against HashiCorp
         2. Migrate CLI/API workspaces to VCS-driven
         3. Publish common modules to Private Registry
 ```
+
+### Mode 2: SE-Assisted (Customer Has No LLM Access)
+
+For customers without a business-approved LLM, the workflow splits into three phases with built-in data privacy:
+
+#### Phase 1: Customer Collects & Obfuscates Data
+
+```bash
+# 1. Set credentials
+export TFC_TOKEN="your-team-token"
+export TFC_ORG="your-organization"
+export OUTPUT_DIR="./assessment"
+
+# 2. Collect data from TFC/TFE API
+python3 scripts/collect_tfc_data.py
+
+# 3. Obfuscate all business-identifiable names
+python3 scripts/obfuscate_data.py
+
+# 4. Send ONLY assessment/data_obfuscated.json to your HashiCorp SE
+#    KEEP assessment/obfuscation_map.json PRIVATE
+```
+
+#### Phase 2: SE Runs Analysis
+
+The HashiCorp SE receives the obfuscated data file, places it as `assessment/data.json`, and runs the skill to generate `report.md` and `roadmap.md`. The SE sends these report files back to the customer.
+
+#### Phase 3: Customer Deobfuscates Reports
+
+```bash
+# 1. Place report.md and roadmap.md from your SE into assessment/
+# 2. Restore real names
+python3 scripts/deobfuscate_report.py
+
+# 3. Your reports now contain real workspace, team, module names
+```
+
+**Privacy Guarantee**: All business names (workspaces, teams, modules, projects, policies, VCS repos, organization) are replaced with SHA-256 hashes. The mapping file that can reverse these hashes never leaves your environment. Even if a third party intercepts the obfuscated data, they see only aggregate metrics — no business-identifiable information.
 
 ## What Gets Evaluated
 
@@ -117,23 +160,29 @@ Your TFC/TFE token needs **read access** to:
 
 A Team token with organization-level read access is recommended.
 
-## Data Collection Scripts
+## Scripts
 
-This skill includes production-ready data collection scripts:
+| Script | Purpose | Requirements |
+|--------|---------|--------------|
+| `scripts/collect_tfc_data.py` | Collect data from TFC/TFE API | Python 3.6+ (no dependencies) |
+| `scripts/collect_tfc_data.sh` | Collect data (Bash alternative) | Bash, curl, jq |
+| `scripts/obfuscate_data.py` | Obfuscate business names for SE-assisted mode | Python 3.6+ (no dependencies) |
+| `scripts/deobfuscate_report.py` | Restore real names in reports after SE analysis | Python 3.6+ (no dependencies) |
 
-| Script | Requirements | Best For |
-|--------|--------------|----------|
-| `scripts/collect_tfc_data.py` | Python 3.6+ (no dependencies) | Cross-platform, recommended |
-| `scripts/collect_tfc_data.sh` | Bash, curl, jq | Unix/macOS systems |
-
-Both scripts handle pagination, rate limiting, and errors gracefully.
+All scripts use Python standard library only — no `pip install` required.
 
 ## Output
 
-The skill generates:
+### Mode 1 (Self-Service)
+
 - `assessment/data.json` - Raw API data
 - `assessment/report.md` - Detailed assessment report
 - `assessment/roadmap.md` - Prioritized improvement roadmap
+
+### Mode 2 (SE-Assisted) — Additional Files
+
+- `assessment/data_obfuscated.json` - Obfuscated data (safe to share with SE)
+- `assessment/obfuscation_map.json` - Hash-to-name mapping (**keep private**)
 
 ## Contributing
 

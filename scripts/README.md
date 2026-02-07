@@ -1,6 +1,15 @@
-# TFC/TFE Data Collection Scripts
+# TFC/TFE Data Collection & Privacy Scripts
 
-Production-ready scripts for collecting comprehensive organization data from Terraform Cloud or Terraform Enterprise APIs.
+Production-ready scripts for collecting comprehensive organization data from Terraform Cloud or Terraform Enterprise APIs, with optional obfuscation for safe sharing with your HashiCorp Sales Engineer.
+
+## Scripts Overview
+
+| Script | Purpose | When to Use |
+|--------|---------|-------------|
+| `collect_tfc_data.py` | Collect data from TFC/TFE API | Always (both modes) |
+| `collect_tfc_data.sh` | Collect data (Bash alternative) | Always (both modes) |
+| `obfuscate_data.py` | Hash business names in data.json | Mode 2: SE-assisted only |
+| `deobfuscate_report.py` | Restore real names in reports | Mode 2: SE-assisted only |
 
 ## Quick Start
 
@@ -144,6 +153,74 @@ The TFC_TOKEN must have **read access** to:
 **Terraform Cloud**: Generate at `https://app.terraform.io/app/settings/tokens`
 
 **Terraform Enterprise**: Generate at `https://tfe.example.com/app/settings/tokens`
+
+## Data Obfuscation (Mode 2: SE-Assisted)
+
+If you don't have access to a business-approved LLM to run the skill yourself, you can collect and obfuscate the data, then send it to your HashiCorp Sales Engineer for analysis.
+
+### Why Obfuscation Is Safe
+
+The obfuscation uses **one-way SHA-256 hashing** with a **random salt** generated fresh each time you run the script. The salt and the mapping file (`obfuscation_map.json`) **stay on your machine** — they are never included in the obfuscated output.
+
+**Your HashiCorp SE cannot reverse the hashes.** Neither can anyone else who intercepts the file. Without the salt and the mapping, the hashed values are computationally irreversible. Even your SE will only see anonymised identifiers like `ws-a1b2c3d4e5f6` instead of your real workspace names. The only data visible in plain text are aggregate metrics (counts, percentages, Terraform versions, run statuses) — the numbers needed to perform the maturity assessment.
+
+### Step 1: Collect Data
+
+```bash
+export TFC_TOKEN="your-team-token"
+export TFC_ORG="your-organization"
+export OUTPUT_DIR="./assessment"
+python3 collect_tfc_data.py
+```
+
+### Step 2: Obfuscate
+
+```bash
+python3 obfuscate_data.py
+```
+
+This produces two files:
+
+| File | Share? | Description |
+|------|--------|-------------|
+| `assessment/data_obfuscated.json` | ✅ **Send to your SE** | All business names replaced with SHA-256 hashes |
+| `assessment/obfuscation_map.json` | ❌ **Keep private** | Maps hashes back to real names (needed for Step 4) |
+
+### Step 3: SE Generates Reports
+
+Your SE places `data_obfuscated.json` as `assessment/data.json` and runs the skill. The resulting `report.md` and `roadmap.md` will contain the obfuscated names. The SE sends these files back to you.
+
+### Step 4: Deobfuscate Reports
+
+Place `report.md` and `roadmap.md` from your SE into the `assessment/` directory alongside your `obfuscation_map.json`, then run:
+
+```bash
+python3 deobfuscate_report.py
+```
+
+Your reports now contain the real names from your organization.
+
+### What Gets Obfuscated vs Preserved
+
+**Obfuscated** (replaced with hashes — not readable by SE):
+- Organization name
+- Workspace names and IDs
+- Module names and namespaces
+- Team names and IDs
+- Project names and IDs
+- Policy set names and IDs
+- Variable set names and IDs
+- VCS repository identifiers
+- Descriptions
+
+**Preserved** (visible in plain text — needed for analysis):
+- Terraform versions
+- Execution modes, auto-apply, speculative plan settings
+- Run statuses, sources, trigger reasons
+- Module providers and version counts
+- Policy/workspace/team counts
+- Timestamps
+- All aggregate metadata
 
 ## Troubleshooting
 
