@@ -181,6 +181,18 @@ def obfuscate_data(data, salt):
     # Metadata - preserve as-is (counts only, no business names)
     result["metadata"] = data.get("metadata", {})
 
+    # State secrets check - obfuscate workspace identifiers, preserve findings
+    result["state_secrets_check"] = []
+    for sc in data.get("state_secrets_check", []):
+        obf_sc = dict(sc)
+        obf_sc["workspace_id"] = obfuscate_string(
+            sc.get("workspace_id"), "wsid", salt, mapping
+        )
+        obf_sc["workspace_name"] = obfuscate_string(
+            sc.get("workspace_name"), "ws", salt, mapping
+        )
+        result["state_secrets_check"].append(obf_sc)
+
     return result, mapping
 
 

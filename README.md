@@ -146,19 +146,21 @@ python3 scripts/deobfuscate_report.py
 | **Policies** | Policy coverage, enforcement levels, pass rates |
 | **Organization** | Team structure, RBAC, project organization, variable sets |
 | **Operations** | Run success rates, frequency, Terraform version hygiene |
+| **State Secrets** | Leaked secrets in state (AWS keys, passwords, tokens), sensitive attribute detection |
 
 ## Token Permissions
 
 Your TFC/TFE token needs **read access** to:
 - Workspaces
 - Runs
+- State Versions (for secrets scanning)
 - Registry Modules
 - Policy Sets
 - Teams
 - Variable Sets
 - Projects
 
-A Team token with organization-level read access is recommended.
+A Team token with organization-level read access is recommended. The token must have **state read** permission on workspaces to enable the state secrets check.
 
 ## Scripts
 

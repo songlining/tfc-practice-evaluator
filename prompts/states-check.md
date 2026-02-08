@@ -1,0 +1,3 @@
+Add the check of the states in each workspace:
+1. Does it contain secrets (API keys, passwords, etc) that it should not be there? If so, provide remediation advices for this kind of situation following best practices in https://developer.hashicorp.com/terraform/language/manage-sensitive-data
+2. Do not download and store the state files locally, even on the client's computer.  Do the checking in the fly.

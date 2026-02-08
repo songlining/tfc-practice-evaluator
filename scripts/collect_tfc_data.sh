@@ -139,7 +139,97 @@ done
 run_count=$(echo "$runs" | jq 'length')
 echo "Collected $run_count runs" >&2
 
-# 3. Collect registry modules
+# 3. State secrets check — stream each workspace's state, scan on-the-fly, never store
+echo "Scanning workspace states for secrets (on-the-fly, never stored)..." >&2
+state_secrets="[]"
+total_state_findings=0
+ws_with_findings=0
+
+for ws_id in $(echo "$workspaces" | jq -r '.[].id'); do
+    ws_name=$(echo "$workspaces" | jq -r ".[] | select(.id == \"$ws_id\") | .attributes.name")
+    echo "  Checking state for workspace: $ws_name" >&2
+
+    sv_response=$(curl -s -H "Authorization: Bearer $TFC_TOKEN" \
+        -H "Content-Type: application/vnd.api+json" \
+        "${TFC_API_BASE}/workspaces/${ws_id}/current-state-version" 2>/dev/null)
+
+    download_url=$(echo "$sv_response" | jq -r '.data.attributes["hosted-state-download-url"] // empty' 2>/dev/null)
+
+    if [ -z "$download_url" ]; then
+        echo "    No state available" >&2
+        entry=$(jq -n --arg wsid "$ws_id" --arg wsname "$ws_name" '{
+            workspace_id: $wsid,
+            workspace_name: $wsname,
+            has_state: false,
+            findings: []
+        }')
+        state_secrets=$(echo "[$state_secrets, [$entry]]" | jq -c 'add | flatten')
+        continue
+    fi
+
+    state_size=$(echo "$sv_response" | jq -r '.data.attributes.size // 0')
+
+    state_json=$(curl -s -H "Authorization: Bearer $TFC_TOKEN" "$download_url" 2>/dev/null)
+
+    findings="[]"
+
+    scan_result=$(echo "$state_json" | jq -c '
+        def scan_attrs(path; attrs):
+            (attrs | to_entries[]
+             | select(.value != null and .value != "" and .value != false and .value != true)
+             | select(.key | test("(?i)^(password|passwd|pwd|secret|api_key|api_secret|api_token|access_key|secret_key|private_key|token|auth_token|master_password|admin_password|db_password|connection_string|client_secret|signing_key|encryption_key|ssh_key|tls_private_key|secret_key_base)$"))
+             | select(.value | type == "string")
+             | select(.value | test("^\\(sensitive") | not)
+             | {attribute_path: (path + "." + .key), pattern: "Sensitive attribute name",
+                description: ("Attribute \(.key) commonly holds secrets and contains a non-empty value in state")}),
+            (attrs | to_entries[]
+             | select(.value != null and (.value | type == "string"))
+             | select(.value | test("AKIA[0-9A-Z]{16}|-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----|(?i)(api[_-]?key|api[_-]?secret|api[_-]?token)\\s*[:=]\\s*|(?i)(password|passwd|pwd|secret)\\s*[:=]\\s*|(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36,}|xox[bpas]-[0-9]{10,}-|(?i)bearer\\s+[A-Za-z0-9._~+/-]+=*|(?i)(mysql|postgres|postgresql|mongodb|redis|amqp|mssql)://[^:]+:[^@]+@"))
+             | {attribute_path: (path + "." + .key), pattern: "Secret pattern match",
+                description: "Value matches a known secret pattern"});
+
+        [(.resources // [] | .[] |
+            . as $r |
+            (.instances // [] | .[] |
+                (.attributes // {} | to_entries[] | select(.value != null)) as $dummy |
+                scan_attrs(($r.mode // "managed") + "." + ($r.type // "unknown") + "." + ($r.name // "unknown"); .attributes // {})
+            )),
+         (.outputs // {} | to_entries[] |
+            select(.value.value != null and (.value.value | type == "string")) |
+            select(.value.value | test("AKIA[0-9A-Z]{16}|-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----|(?i)(api[_-]?key|api[_-]?secret|api[_-]?token)\\s*[:=]\\s*|(?i)(password|passwd|pwd|secret)\\s*[:=]\\s*|(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36,}|xox[bpas]-[0-9]{10,}-|(?i)bearer\\s+[A-Za-z0-9._~+/-]+=*|(?i)(mysql|postgres|postgresql|mongodb|redis|amqp|mssql)://[^:]+:[^@]+@")) |
+            {attribute_path: ("output." + .key), pattern: "Secret pattern match",
+             description: "Output value matches a known secret pattern"})]' 2>/dev/null || echo "[]")
+
+    unset state_json
+
+    finding_count=$(echo "$scan_result" | jq 'length')
+
+    if [ "$finding_count" -gt 0 ]; then
+        echo "    ⚠️  Found $finding_count potential secret(s)" >&2
+        total_state_findings=$((total_state_findings + finding_count))
+        ws_with_findings=$((ws_with_findings + 1))
+    else
+        echo "    ✅ No secrets detected" >&2
+    fi
+
+    entry=$(jq -n --arg wsid "$ws_id" --arg wsname "$ws_name" \
+        --argjson has_state true \
+        --argjson state_size "$state_size" \
+        --argjson count "$finding_count" \
+        --argjson findings "$scan_result" '{
+        workspace_id: $wsid,
+        workspace_name: $wsname,
+        has_state: $has_state,
+        state_size_bytes: $state_size,
+        findings_count: $count,
+        findings: $findings
+    }')
+    state_secrets=$(echo "[$state_secrets, [$entry]]" | jq -c 'add | flatten')
+done
+
+echo "State scan complete: $total_state_findings finding(s) across $ws_with_findings workspace(s)" >&2
+
+# 4. Collect registry modules
 echo "Collecting registry modules..." >&2
 modules=$(fetch_all_pages "/organizations/${TFC_ORG}/registry-modules?page[size]=100")
 module_count=$(echo "$modules" | jq 'length')
@@ -153,7 +243,7 @@ modules_simplified=$(echo "$modules" | jq '[.[] | {
     version_statuses: .attributes["version-statuses"]
 }]')
 
-# 4. Collect policy sets
+# 5. Collect policy sets
 echo "Collecting policy sets..." >&2
 policy_sets=$(fetch_all_pages "/organizations/${TFC_ORG}/policy-sets?page[size]=100")
 policy_count=$(echo "$policy_sets" | jq 'length')
@@ -169,7 +259,7 @@ policy_sets_simplified=$(echo "$policy_sets" | jq '[.[] | {
     kind: .attributes.kind
 }]')
 
-# 5. Collect teams
+# 6. Collect teams
 echo "Collecting teams..." >&2
 teams=$(fetch_all_pages "/organizations/${TFC_ORG}/teams?page[size]=100")
 team_count=$(echo "$teams" | jq 'length')
@@ -183,7 +273,7 @@ teams_simplified=$(echo "$teams" | jq '[.[] | {
     visibility: .attributes.visibility
 }]')
 
-# 6. Collect variable sets
+# 7. Collect variable sets
 echo "Collecting variable sets..." >&2
 varsets=$(fetch_all_pages "/organizations/${TFC_ORG}/varsets?page[size]=100")
 varset_count=$(echo "$varsets" | jq 'length')
@@ -198,7 +288,7 @@ varsets_simplified=$(echo "$varsets" | jq '[.[] | {
     workspace_count: (.relationships.workspaces.data // [] | length)
 }]')
 
-# 7. Collect projects
+# 8. Collect projects
 echo "Collecting projects..." >&2
 projects=$(fetch_all_pages "/organizations/${TFC_ORG}/projects?page[size]=100")
 project_count=$(echo "$projects" | jq 'length')
@@ -217,6 +307,7 @@ final_json=$(jq -n \
     --arg timestamp "$TIMESTAMP" \
     --argjson workspaces "$workspaces_simplified" \
     --argjson runs "$runs" \
+    --argjson state_secrets "$state_secrets" \
     --argjson modules "$modules_simplified" \
     --argjson policy_sets "$policy_sets_simplified" \
     --argjson teams "$teams_simplified" \
@@ -229,11 +320,14 @@ final_json=$(jq -n \
     --argjson run_count "$run_count" \
     --argjson varset_count "$varset_count" \
     --argjson proj_count "$project_count" \
+    --argjson state_findings "$total_state_findings" \
+    --argjson state_ws_findings "$ws_with_findings" \
     '{
         organization: $org,
         collected_at: $timestamp,
         workspaces: $workspaces,
         runs: $runs,
+        state_secrets_check: $state_secrets,
         modules: $modules,
         policy_sets: $policy_sets,
         teams: $teams,
@@ -246,7 +340,9 @@ final_json=$(jq -n \
             total_policies: $pol_count,
             total_teams: $team_count,
             total_variable_sets: $varset_count,
-            total_projects: $proj_count
+            total_projects: $proj_count,
+            state_secrets_total_findings: $state_findings,
+            state_secrets_workspaces_with_findings: $state_ws_findings
         }
     }')
 
@@ -262,6 +358,7 @@ echo "" >&2
 echo "Summary:" >&2
 echo "  Workspaces: $workspace_count" >&2
 echo "  Runs (sampled): $run_count" >&2
+echo "  State secrets findings: $total_state_findings across $ws_with_findings workspace(s)" >&2
 echo "  Modules: $module_count" >&2
 echo "  Policy Sets: $policy_count" >&2
 echo "  Teams: $team_count" >&2

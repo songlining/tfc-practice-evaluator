@@ -105,6 +105,22 @@ Both scripts produce identical JSON structure at `assessment/data.json`:
   "collected_at": "2026-02-06T19:12:34Z",
   "workspaces": [...],
   "runs": [...],
+  "state_secrets_check": [
+    {
+      "workspace_id": "ws-...",
+      "workspace_name": "workspace-name",
+      "has_state": true,
+      "state_size_bytes": 45000,
+      "findings_count": 2,
+      "findings": [
+        {
+          "attribute_path": "managed.aws_db_instance.main.password",
+          "pattern": "Sensitive attribute name",
+          "description": "Attribute 'password' commonly holds secrets and contains a non-empty value in state"
+        }
+      ]
+    }
+  ],
   "modules": [...],
   "policy_sets": [...],
   "teams": [...],
@@ -117,7 +133,9 @@ Both scripts produce identical JSON structure at `assessment/data.json`:
     "total_policies": 0,
     "total_teams": 1,
     "total_variable_sets": 5,
-    "total_projects": 2
+    "total_projects": 2,
+    "state_secrets_total_findings": 2,
+    "state_secrets_workspaces_with_findings": 1
   }
 }
 ```
@@ -147,13 +165,14 @@ export TFE_URL="https://tfe.example.com"  # TFE URL (optional, only for Terrafor
 The token needs **read access** to:
 - Workspaces
 - Runs  
+- State Versions (for secrets scanning)
 - Registry Modules
 - Policy Sets
 - Teams
 - Variable Sets
 - Projects
 
-A **Team token** with organization-level read access is recommended.
+A **Team token** with organization-level read access is recommended. The token must have **state read** permission on workspaces to enable the state secrets check.
 
 **For Terraform Enterprise**: Ensure your TFE instance is accessible and the token has the same organization-level read permissions.
 
@@ -293,6 +312,18 @@ python3 scripts/deobfuscate_report.py
 - Terraform version hygiene
 - Active workspace percentage
 
+### 6. State Secrets Hygiene
+- Scans each workspace's current Terraform state **on-the-fly** (state is never downloaded to disk)
+- Detects leaked secrets: AWS keys, private keys, API tokens, passwords, database connection strings, GitHub/Slack tokens, bearer tokens
+- Flags resource attributes with sensitive names (`password`, `secret_key`, `api_token`, etc.) that contain non-empty values
+- Checks root module outputs for secret patterns
+- Provides remediation advice per [HashiCorp sensitive data best practices](https://developer.hashicorp.com/terraform/language/manage-sensitive-data):
+  - Mark variables and outputs as `sensitive = true` to redact from CLI/UI
+  - Use `ephemeral = true` (Terraform 1.10+) to omit values from state entirely
+  - Use write-only arguments (`_wo` suffix, Terraform 1.11+) to pass secrets without persisting
+  - Store state remotely with encryption at rest (HCP Terraform, S3 with `encrypt`, GCS with KMS)
+  - Rotate any credentials found in state immediately
+
 ## Execution Flow
 
 > The execution flow below applies to **Mode 1 (Self-Service)** and to the SE's side in **Mode 2 (SE-Assisted)**. In Mode 2, the SE receives `data_obfuscated.json` and treats it as `assessment/data.json` — the rest of the flow is identical.
@@ -333,13 +364,15 @@ python3 scripts/collect_tfc_data.py
 - Fetches all required endpoints with pagination:
   - `/organizations/{org}/workspaces`
   - `/workspaces/{id}/runs` (sampled from up to 10 workspaces)
+  - `/workspaces/{id}/current-state-version` → `hosted-state-download-url` (all workspaces, streamed in memory, never saved to disk)
   - `/organizations/{org}/registry-modules`
   - `/organizations/{org}/policy-sets`
   - `/organizations/{org}/teams`
   - `/organizations/{org}/varsets`
   - `/organizations/{org}/projects`
+- Scans each workspace state for leaked secrets on-the-fly
 - Handles rate limiting gracefully
-- Saves consolidated output to `assessment/data.json`
+- Saves consolidated output to `assessment/data.json` (state file contents are **never** included — only the scan findings)
 
 **API Base URL Defaults**:
 - Terraform Cloud: `https://app.terraform.io/api/v2` (default)
@@ -349,7 +382,7 @@ python3 scripts/collect_tfc_data.py
 
 ### Step 3: Analysis (Multiple Sub-Agents)
 
-🤖 **SPAWN 5 PARALLEL SUB-AGENTS** (each analyzes one category):
+🤖 **SPAWN 6 PARALLEL SUB-AGENTS** (each analyzes one category):
 
 1. **`gitops-evaluator-agent`**: Read `assessment/data.json`, analyze VCS integration metrics, calculate GitOps score using criteria from `research/PATTERNS.md`, return JSON with score and findings.
 
@@ -361,7 +394,9 @@ python3 scripts/collect_tfc_data.py
 
 5. **`ops-evaluator-agent`**: Read `assessment/data.json`, analyze run health and operations, calculate Ops score, return JSON with score and findings.
 
-**Main agent** collects all 5 results and consolidates into overall scores.
+6. **`state-secrets-evaluator-agent`**: Read `assessment/data.json` `state_secrets_check` section, summarise findings per workspace, calculate State Secrets score (0 findings = perfect, any finding = critical), provide remediation recommendations referencing https://developer.hashicorp.com/terraform/language/manage-sensitive-data, return JSON with score, findings, and remediation plan.
+
+**Main agent** collects all 6 results and consolidates into overall scores.
 
 ### Step 4: Report Synthesis (Sub-Agent Required)
 
@@ -388,10 +423,10 @@ Main agent context remains clean throughout - only orchestration and summary.
 ### Why Sub-Agents Are Required
 
 1. **Context Management**: API responses can be 10-50KB per endpoint (e.g., 87KB data.json for 4 workspaces). Without sub-agents, the main agent's context would be polluted with raw JSON data.
-2. **Parallel Processing**: Multiple evaluation categories can be analyzed simultaneously (5 parallel evaluations: GitOps, PMR, Policy, Org, Ops).
+2. **Parallel Processing**: Multiple evaluation categories can be analyzed simultaneously (6 parallel evaluations: GitOps, PMR, Policy, Org, Ops, State Secrets).
 3. **Isolation**: Each sub-agent has a focused task and clean context.
 4. **Error Recovery**: If one sub-agent fails, others can continue.
-5. **Proven Performance**: Successfully evaluated `hashicorp-wwtfo-demo-platform-prod` (4 workspaces, 41 modules, 68 runs) in ~8 minutes with 7 parallel sub-agents.
+5. **Proven Performance**: Successfully evaluated `hashicorp-wwtfo-demo-platform-prod` (4 workspaces, 41 modules, 68 runs) in ~8 minutes with 8 parallel sub-agents.
 
 ### Sub-Agent Execution Order
 
@@ -401,14 +436,15 @@ Main Agent (Orchestrator)
     ├─ [Step 1] Validate prerequisites (credentials, directory setup)
     ↓
     ├─ [Step 2] SPAWN → data-collector-agent
-    │           └─ Fetches all API data → assessment/data.json
+    │           └─ Fetches all API data + scans states for secrets → assessment/data.json
     ↓
-    ├─ [Step 3] SPAWN (5 parallel) → evaluation agents
+    ├─ [Step 3] SPAWN (6 parallel) → evaluation agents
     │           ├─ gitops-evaluator-agent
     │           ├─ pmr-evaluator-agent
     │           ├─ policy-evaluator-agent
     │           ├─ org-evaluator-agent
-    │           └─ ops-evaluator-agent
+    │           ├─ ops-evaluator-agent
+    │           └─ state-secrets-evaluator-agent
     │           └─ All return JSON with scores/findings
     ↓
     ├─ [Step 4] SPAWN → report-synthesizer-agent
@@ -427,6 +463,7 @@ Main Agent (Orchestrator)
 | `policy-evaluator-agent` | Main | `data.json`, `PATTERNS.md`, `sentinel-policies.md` | JSON: score + gap analysis | read_file |
 | `org-evaluator-agent` | Main | `data.json`, `PATTERNS.md` | JSON: score + findings | read_file |
 | `ops-evaluator-agent` | Main | `data.json`, `PATTERNS.md` | JSON: score + findings | read_file |
+| `state-secrets-evaluator-agent` | Main | `data.json` (`state_secrets_check`) | JSON: score + findings + remediation | read_file |
 | `report-synthesizer-agent` | Main | All evaluation results | `report.md`, `roadmap.md` | create_file |
 
 ### Sub-Agent Communication Protocol
@@ -462,6 +499,16 @@ Main Agent: runSubagent(
 | Policy-as-Code | 25% | Scale |
 | Organization | 15% | All |
 | Operations | 15% | All |
+
+**State Secrets Hygiene** is evaluated as a **critical overlay** rather than a weighted category. Any findings act as a maturity cap:
+
+| State Secrets Findings | Impact |
+|------------------------|--------|
+| 0 findings | No impact — full score applies |
+| 1-5 findings | Warning flag in report; Operations score capped at 70% |
+| 6+ findings | Critical flag; Operations score capped at 50%; overall maturity capped at "Adopting" |
+
+This ensures that leaked secrets in state are treated as a blocking issue regardless of how well other categories score.
 
 ### Score Interpretation
 
@@ -529,7 +576,7 @@ Main Agent → AskUserQuestion (collects token) → Environment variable → Sub
 
 **Measured Performance (4 workspaces, 41 modules):**
 - Data collection: **~30 seconds** (Python script)
-- Parallel evaluations: **~5 minutes** (5 agents: GitOps, PMR, Policy, Org, Ops)
+- Parallel evaluations: **~5 minutes** (6 agents: GitOps, PMR, Policy, Org, Ops, State Secrets)
 - Report synthesis: **~3 minutes** (1 agent: consolidation + writing)
 - **Total: ~8 minutes**
 
@@ -691,9 +738,10 @@ Save to assessment/gitops-eval.json. Use ONLY read_file - NO MCP servers.
 - ✅ At least one category has data (modules OR workspaces OR teams)
 
 **After Evaluations:**
-- ✅ 5 evaluation JSON files exist (gitops, pmr, policy, org, ops)
+- ✅ 6 evaluation JSON files exist (gitops, pmr, policy, org, ops, state-secrets)
 - ✅ Each has a `score` field (numeric)
 - ✅ Policy evaluation includes `gap_analysis` object
+- ✅ State secrets evaluation includes `findings` array and `remediation` recommendations
 
 **After Report Synthesis:**
 - ✅ `report.md` is >20 KB (comprehensive content)
@@ -754,6 +802,8 @@ Save to assessment/gitops-eval.json. Use ONLY read_file - NO MCP servers.
 | Team `users_count`, `organization_access`, `visibility` | RBAC analysis |
 | Variable set `global`, `priority`, `workspace_count` | Configuration management analysis |
 | All `metadata` counts | Summary statistics |
+| State secrets `findings` (pattern names, descriptions, attribute paths) | Security analysis — technical patterns, not business names |
+| State secrets `findings_count`, `has_state`, `state_size_bytes` | Aggregate metrics |
 
 **Security Properties:**
 - SHA-256 hashing with a per-session random salt
@@ -762,7 +812,7 @@ Save to assessment/gitops-eval.json. Use ONLY read_file - NO MCP servers.
 - The `obfuscation_map.json` never leaves the customer environment
 - Even with the obfuscated data, an attacker cannot reverse the hashes without the salt
 
-### 9. Report Tailoring Strategies
+### 10. Report Tailoring Strategies
 
 **For Sales/Pre-Sales:**
 - Lead with business value (cost savings, audit time reduction)
@@ -782,7 +832,7 @@ Save to assessment/gitops-eval.json. Use ONLY read_file - NO MCP servers.
 - Risk framing (compliance gaps, audit findings)
 - Investment required (time, budget, resources)
 
-### 10. Quick Wins to Always Recommend
+### 11. Quick Wins to Always Recommend
 
 Regardless of organization maturity, these are **always** actionable:
 
@@ -818,7 +868,7 @@ This skill has been successfully validated against real TFC organizations:
 **Test Case: `hashicorp-wwtfo-demo-platform-prod`**
 - Organization Size: 4 workspaces, 41 private modules, 68 runs sampled
 - Data Collection: 87 KB `data.json` generated in ~30 seconds
-- Evaluation: 5 parallel sub-agents completed in ~8 minutes
+- Evaluation: 6 parallel sub-agents completed in ~8 minutes
 - Output: 39 KB `report.md`, 49 KB `roadmap.md`
 - Results:
   - Overall Score: 60.5/100 (Adopting → Standardizing)
@@ -871,6 +921,32 @@ This real-world validation proves the skill can handle production TFC organizati
 | Policy-as-Code | 15/100 | Early |
 | Organization | 68/100 | Standardizing |
 | Operations | 62/100 | Adopted |
+
+## State Secrets Findings
+
+| Severity | Count |
+|----------|-------|
+| 🔴 Secrets in state | 3 |
+| 🟡 Sensitive attribute names | 7 |
+| Workspaces affected | 2 / 12 |
+
+### Critical: Secrets Found in Terraform State
+
+| Workspace | Finding | Attribute Path |
+|-----------|---------|----------------|
+| `aws-production` | AWS Secret Key pattern | `managed.aws_iam_access_key.deploy.secret` |
+| `aws-production` | Password assignment | `managed.aws_db_instance.main.password` |
+| `aws-staging` | Connection string with credentials | `managed.aws_db_instance.staging.endpoint` |
+
+### Remediation (Priority: Immediate)
+
+1. **Rotate compromised credentials** — All secrets found in state must be assumed compromised
+2. **Mark sensitive variables**: Add `sensitive = true` to variable and output declarations
+3. **Use ephemeral values** (Terraform 1.10+): Add `ephemeral = true` to omit from state entirely
+4. **Use write-only arguments** (Terraform 1.11+): Use `_wo` suffixed arguments for passwords
+5. **Enable state encryption**: Store state in HCP Terraform or S3 with `encrypt = true`
+
+> Reference: [Managing Sensitive Data in Terraform](https://developer.hashicorp.com/terraform/language/manage-sensitive-data)
 
 ## Policy Gap Analysis
 
@@ -994,6 +1070,7 @@ assessment/
 ├── policy-eval.json                  # Policy evaluation + gap analysis
 ├── org-eval.json                     # Organization evaluation results
 ├── ops-eval.json                     # Operations evaluation results
+├── state-secrets-eval.json           # State secrets evaluation results
 ├── report.md                         # Executive assessment report
 └── roadmap.md                        # 6-month implementation roadmap
 ```

@@ -69,15 +69,16 @@ sudo yum install jq
 
 ## What Gets Collected
 
-The scripts collect comprehensive data from 7 TFC/TFE API endpoints:
+The scripts collect comprehensive data from 8 TFC/TFE API endpoints:
 
 1. **Workspaces** - All workspaces with VCS, Terraform version, execution mode, etc.
 2. **Runs** - Sample of recent runs (up to 20 runs from up to 10 workspaces)
-3. **Registry Modules** - All private modules with version information
-4. **Policy Sets** - All policy sets (Sentinel/OPA) with enforcement levels
-5. **Teams** - All teams with user counts and permissions
-6. **Variable Sets** - All variable sets with workspace attachments
-7. **Projects** - All projects with descriptions
+3. **State Secrets Scan** - Each workspace's current state is streamed in memory and scanned for leaked secrets (AWS keys, private keys, API tokens, passwords, connection strings, GitHub/Slack tokens, bearer tokens, sensitive attribute names). **State files are never saved to disk** — they are held in memory during scanning and immediately discarded.
+4. **Registry Modules** - All private modules with version information
+5. **Policy Sets** - All policy sets (Sentinel/OPA) with enforcement levels
+6. **Teams** - All teams with user counts and permissions
+7. **Variable Sets** - All variable sets with workspace attachments
+8. **Projects** - All projects with descriptions
 
 ## Output Format
 
@@ -103,6 +104,22 @@ Creates `assessment/data.json` with this structure:
     }
   ],
   "runs": [...],
+  "state_secrets_check": [
+    {
+      "workspace_id": "ws-...",
+      "workspace_name": "workspace-name",
+      "has_state": true,
+      "state_size_bytes": 45000,
+      "findings_count": 2,
+      "findings": [
+        {
+          "attribute_path": "managed.aws_db_instance.main.password",
+          "pattern": "Sensitive attribute name",
+          "description": "Attribute 'password' commonly holds secrets and contains a non-empty value in state"
+        }
+      ]
+    }
+  ],
   "modules": [...],
   "policy_sets": [...],
   "teams": [...],
@@ -115,7 +132,9 @@ Creates `assessment/data.json` with this structure:
     "total_policies": 0,
     "total_teams": 1,
     "total_variable_sets": 5,
-    "total_projects": 2
+    "total_projects": 2,
+    "state_secrets_total_findings": 2,
+    "state_secrets_workspaces_with_findings": 1
   }
 }
 ```
@@ -142,13 +161,14 @@ Python version works on any platform with Python 3.6+. Bash version works on mac
 The TFC_TOKEN must have **read access** to:
 - ✅ Workspaces
 - ✅ Runs
+- ✅ State Versions (for secrets scanning)
 - ✅ Registry Modules
 - ✅ Policy Sets
 - ✅ Teams
 - ✅ Variable Sets
 - ✅ Projects
 
-**Recommended**: Use a Team token with organization-level read access.
+**Recommended**: Use a Team token with organization-level read access. The token must have **state read** permission on workspaces to enable the state secrets check.
 
 **Terraform Cloud**: Generate at `https://app.terraform.io/app/settings/tokens`
 
@@ -212,6 +232,7 @@ Your reports now contain the real names from your organization.
 - Variable set names and IDs
 - VCS repository identifiers
 - Descriptions
+- State secrets check: workspace names and IDs
 
 **Preserved** (visible in plain text — needed for analysis):
 - Terraform versions
@@ -221,6 +242,7 @@ Your reports now contain the real names from your organization.
 - Policy/workspace/team counts
 - Timestamps
 - All aggregate metadata
+- State secrets findings: pattern names, descriptions, attribute paths, finding counts, state size
 
 ## Troubleshooting
 
@@ -272,6 +294,7 @@ These scripts have been validated against:
 - Store tokens in environment variables or secure credential stores
 - Use Team tokens with least-privilege access (read-only for assessments)
 - Rotate tokens regularly according to your security policy
+- **State files are never written to disk** — they are streamed into memory, scanned for secrets, and immediately discarded. Only the scan findings (attribute paths and pattern names) are recorded in `data.json`; actual secret values are never logged or stored.
 
 ## Support
 
