@@ -15,7 +15,7 @@ import urllib.request
 import json
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 import sys
 
 # Configuration from environment variables
@@ -355,7 +355,7 @@ def main():
 
     print(f"Starting data collection for organization: {TFC_ORG}", file=sys.stderr)
     print(f"API Base: {TFC_API_BASE}", file=sys.stderr)
-    timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     print(f"Timestamp: {timestamp}", file=sys.stderr)
 
     # 1. Collect all workspaces

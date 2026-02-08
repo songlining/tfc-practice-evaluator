@@ -1,0 +1,59 @@
+{
+  "category": "Module Library (PMR)",
+  "score": 19,
+  "max_score": 20,
+  "percentage": 95,
+  "stage": "Scale",
+  "evaluation_date": "2026-02-08",
+  "metrics": {
+    "module_count": {
+      "score": 5,
+      "max": 5,
+      "detail": "41 modules in Private Module Registry (threshold: 20+ = 5 pts)"
+    },
+    "versioning_practices": {
+      "score": 5,
+      "max": 5,
+      "detail": "Average 16.6 versions per module. All 41 modules have reached v1.0.0+. Range: 3 to 68 versions per module. Indicates intensive development and iterative publishing.",
+      "top_versioned_modules": [
+        {"module": "mod-188adfd18a6e (terraform)", "versions": 68},
+        {"module": "mod-7b2cae1f2e16 (terraform)", "versions": 42},
+        {"module": "mod-b47d8da1340c (vault)", "versions": 40}
+      ]
+    },
+    "provider_coverage": {
+      "score": 5,
+      "max": 5,
+      "detail": "10 distinct providers covered across 41 modules (threshold: 5+ = 5 pts)",
+      "providers": {
+        "vault": 12,
+        "terraform": 10,
+        "util": 3,
+        "waypoint": 2,
+        "boundary": 1,
+        "nomad": 1,
+        "consul": 1,
+        "hvs": 1,
+        "vaultradar": 1,
+        "autobahn": 1
+      }
+    },
+    "module_maturity": {
+      "score": 4,
+      "max": 5,
+      "detail": "All 41 modules at v1.0.0+ (GA). Minor deduction: 2 modules have reg_ingress_failed versions (mod-b26a200ad05d boundary v0.1.1, mod-86b75ebf6f16 util v1.0.1). These are isolated version failures, not systemic issues.",
+      "ingress_failures": [
+        {"module": "mod-b26a200ad05d (boundary)", "version": "0.1.1", "status": "reg_ingress_failed"},
+        {"module": "mod-86b75ebf6f16 (util)", "version": "1.0.1", "status": "reg_ingress_failed"}
+      ]
+    }
+  },
+  "findings": [
+    "STRENGTH: Exceptional module library - 41 modules across 10 providers is enterprise-grade",
+    "STRENGTH: Active versioning culture with 16.6 average versions per module, indicating continuous improvement",
+    "STRENGTH: All modules at GA maturity (v1.0.0+) - no pre-release or experimental modules in production",
+    "STRENGTH: Strong HashiCorp product coverage - vault (12), terraform (10), boundary, nomad, consul, waypoint, hvs, vaultradar, autobahn",
+    "MINOR: 2 modules have ingress failure versions - investigate CI/CD pipeline for module publishing",
+    "OPPORTUNITY: Module library is the strongest asset of this organization - showcase as PMR best practice example"
+  ]
+}

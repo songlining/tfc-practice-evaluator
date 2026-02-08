@@ -384,11 +384,11 @@ python3 scripts/collect_tfc_data.py
 
 🤖 **SPAWN 6 PARALLEL SUB-AGENTS** (each analyzes one category):
 
-1. **`gitops-evaluator-agent`**: Read `assessment/data.json`, analyze VCS integration metrics, calculate GitOps score using criteria from `research/PATTERNS.md`, return JSON with score and findings.
+1. **`gitops-evaluator-agent`**: Read `assessment/data.json`, analyze VCS integration metrics, calculate GitOps score using the scoring rubric defined in the Scoring Model section below, return JSON with score and findings.
 
 2. **`pmr-evaluator-agent`**: Read `assessment/data.json`, analyze module library metrics, calculate PMR score, return JSON with score and findings.
 
-3. **`policy-evaluator-agent`**: Read `assessment/data.json` and `research/sentinel-policies.md`, analyze policy coverage, identify gaps (including custom policy needs), calculate Policy score, return JSON with score, findings, and gap analysis.
+3. **`policy-evaluator-agent`**: Read `assessment/data.json`, analyze policy coverage using the Policy Gap Handling section below, identify gaps (including custom policy needs), calculate Policy score, return JSON with score, findings, and gap analysis.
 
 4. **`org-evaluator-agent`**: Read `assessment/data.json`, analyze team structure and organization, calculate Org score, return JSON with score and findings.
 
@@ -458,11 +458,11 @@ Main Agent (Orchestrator)
 | Sub-Agent | Spawned By | Input | Output | Tools |
 |-----------|------------|-------|--------|-------|
 | `data-collector-agent` | Main | Credentials, API URL | `assessment/data.json` | curl, jq |
-| `gitops-evaluator-agent` | Main | `data.json`, `PATTERNS.md` | JSON: score + findings | read_file |
-| `pmr-evaluator-agent` | Main | `data.json`, `PATTERNS.md` | JSON: score + findings | read_file |
-| `policy-evaluator-agent` | Main | `data.json`, `PATTERNS.md`, `sentinel-policies.md` | JSON: score + gap analysis | read_file |
-| `org-evaluator-agent` | Main | `data.json`, `PATTERNS.md` | JSON: score + findings | read_file |
-| `ops-evaluator-agent` | Main | `data.json`, `PATTERNS.md` | JSON: score + findings | read_file |
+| `gitops-evaluator-agent` | Main | `data.json` | JSON: score + findings | read_file |
+| `pmr-evaluator-agent` | Main | `data.json` | JSON: score + findings | read_file |
+| `policy-evaluator-agent` | Main | `data.json` | JSON: score + gap analysis | read_file |
+| `org-evaluator-agent` | Main | `data.json` | JSON: score + findings | read_file |
+| `ops-evaluator-agent` | Main | `data.json` | JSON: score + findings | read_file |
 | `state-secrets-evaluator-agent` | Main | `data.json` (`state_secrets_check`) | JSON: score + findings + remediation | read_file |
 | `report-synthesizer-agent` | Main | All evaluation results | `report.md`, `roadmap.md` | create_file |
 
@@ -483,7 +483,7 @@ Main Agent (Orchestrator)
 
 ```
 Main Agent: runSubagent(
-  prompt: "Read assessment/data.json. Count workspaces with vcs_repo configured. Calculate percentage. Using research/PATTERNS.md scoring rubric, evaluate VCS Integration criterion and return JSON: {score: X, findings: ['...']}. Use ONLY read_file - NO MCP servers.",
+  prompt: "Read assessment/data.json. Count workspaces with vcs_repo configured. Calculate percentage. Using the scoring rubric from the Scoring Model section of SKILL.md, evaluate VCS Integration criterion and return JSON: {score: X, findings: ['...']}. Use ONLY read_file - NO MCP servers.",
   description: "GitOps Evaluation"
 )
 ```
@@ -1052,13 +1052,6 @@ tfc-practice-evaluator/
 │   ├── collect_tfc_data.sh          # Data collection - Bash
 │   ├── obfuscate_data.py            # Obfuscate data.json for SE-assisted mode
 │   └── deobfuscate_report.py        # Deobfuscate reports after SE analysis
-└── research/                         # Research documents (if present)
-    ├── tfc-api.md                    # TFC API capabilities
-    ├── hvd-criteria.md               # HVD maturity criteria
-    ├── gitops-patterns.md            # GitOps best practices
-    ├── sentinel-policies.md          # Policy-as-code patterns
-    ├── onboarding-patterns.md        # Team onboarding patterns
-    └── PATTERNS.md                   # Synthesized evaluation rubric
 
 Output (created during execution):
 assessment/
@@ -1075,12 +1068,6 @@ assessment/
 └── roadmap.md                        # 6-month implementation roadmap
 ```
 
-## Research Documents
+## References
 
-This skill was built from these research documents (if available in `research/`):
-- `research/tfc-api.md` - TFC API capabilities
-- `research/hvd-criteria.md` - HVD maturity criteria
-- `research/gitops-patterns.md` - GitOps best practices
-- `research/sentinel-policies.md` - Policy-as-code patterns
-- `research/onboarding-patterns.md` - Team onboarding patterns
-- `research/PATTERNS.md` - Synthesized evaluation rubric
+This skill's scoring rubrics, policy gap analysis, and evaluation criteria are all embedded inline in this document (see Scoring Model, Policy Gap Handling, and Sub-Agent Prompt Patterns sections above).

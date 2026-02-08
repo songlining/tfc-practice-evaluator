@@ -1,0 +1,69 @@
+{
+  "category": "Organization & Teams",
+  "score": 6,
+  "max_score": 15,
+  "percentage": 40,
+  "stage": "Adopt",
+  "evaluation_date": "2026-02-08",
+  "metrics": {
+    "team_structure": {
+      "score": 1,
+      "max": 5,
+      "detail": "Only 1 team with 327 users. No RBAC separation (no Admin/Developer/Viewer roles). Team visibility is 'secret', organization_access has no manage permissions. Single flat team structure with hundreds of users is a scaling bottleneck.",
+      "teams": [
+        {
+          "team": "team-29e5cdeb4a71",
+          "users_count": 327,
+          "visibility": "secret",
+          "organization_access": {
+            "manage_policies": false,
+            "manage_workspaces": false,
+            "manage_vcs_settings": false,
+            "manage_providers": false,
+            "manage_modules": false,
+            "manage_run_tasks": false,
+            "manage_projects": false,
+            "read_workspaces": false,
+            "read_projects": false,
+            "manage_membership": false
+          }
+        }
+      ]
+    },
+    "project_organization": {
+      "score": 3,
+      "max": 5,
+      "detail": "2 projects exist, providing basic workspace grouping. Workspaces 1-3 share one project (prjid-b6a97d6caaec), workspace 4 in another (prjid-ffdc8c65d379). Structure exists but minimal.",
+      "projects": [
+        {"project": "prjid-b6a97d6caaec", "workspaces": ["ws-aa1bbf21273d", "ws-e2ab44612647", "ws-8c168b8f9329"]},
+        {"project": "prjid-ffdc8c65d379", "workspaces": ["ws-cdfaef0fb16a"]}
+      ]
+    },
+    "variable_sets": {
+      "score": 1,
+      "max": 3,
+      "detail": "5 variable sets exist (all global) but NONE are attached to any workspaces (workspace_count=0 for all 5). Variable sets were created but never operationalized.",
+      "variable_sets": [
+        {"name": "vs-fb6a4f78cd21", "global": true, "workspace_count": 0, "priority": false},
+        {"name": "vs-a68b9e558d1e", "global": true, "workspace_count": 0, "priority": false},
+        {"name": "vs-c63ec14d4f43", "global": true, "workspace_count": 0, "priority": false},
+        {"name": "vs-e3d4a1f31ef0", "global": true, "workspace_count": 0, "priority": false},
+        {"name": "vs-56e9c5afbb1b", "global": true, "workspace_count": 0, "priority": false}
+      ]
+    },
+    "workspace_naming": {
+      "score": 1,
+      "max": 2,
+      "detail": "Workspace names are obfuscated (ws-* pattern). Cannot assess naming convention quality. Consistent prefix pattern suggests some standardization. 1 point for evidence of consistent structure."
+    }
+  },
+  "findings": [
+    "CRITICAL GAP: Single team with 327 users - no RBAC differentiation (Admin/Developer/Viewer)",
+    "GAP: 5 variable sets created but 0 attached to workspaces - configuration management not operationalized",
+    "MODERATE: Only 2 projects for 4 workspaces - minimal organizational hierarchy",
+    "OBSERVATION: Team has no organization-level manage permissions (all false) - may indicate Owners team handles administration",
+    "QUICK WIN: Attach existing variable sets to relevant workspaces (1-2 hours effort)",
+    "QUICK WIN: Create at least 3 teams: Platform Admin, Developer, Viewer (4-8 hours effort)",
+    "OPPORTUNITY: Project structure exists - expand to support environment-based or team-based workspace grouping"
+  ]
+}
