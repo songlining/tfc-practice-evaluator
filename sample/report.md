@@ -1,6 +1,6 @@
 # Terraform Cloud Maturity Assessment Report
 
-**Organization**: hashicorp-wwtfo-demo-platform-prod  
+**Organization**: example-org-production  
 **Assessment Date**: February 8, 2026  
 **Overall Maturity Score**: 57/100 (Adopted)  
 **Assessment Framework**: HashiCorp Validated Designs (HVD)

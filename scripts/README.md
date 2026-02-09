@@ -10,6 +10,7 @@ Production-ready scripts for collecting comprehensive organization data from Ter
 | `collect_tfc_data.sh` | Collect data (Bash alternative) | Always (both modes) |
 | `obfuscate_data.py` | Hash business names in data.json | Mode 2: SE-assisted only |
 | `deobfuscate_report.py` | Restore real names in reports | Mode 2: SE-assisted only |
+| `convert_to_docx.py` | Convert Markdown reports to Word DOCX | Optional post-processing |
 
 ## Quick Start
 
@@ -244,6 +245,59 @@ Your reports now contain the real names from your organization.
 - All aggregate metadata
 - State secrets findings: pattern names, descriptions, attribute paths, finding counts, state size
 
+## DOCX Conversion (Optional)
+
+After generating `report.md` and `roadmap.md` (either via Mode 1 or Mode 2), you can optionally convert them to Word DOCX format for sharing with stakeholders who prefer formatted documents.
+
+### Requirements
+
+```bash
+pip install python-docx
+```
+
+This is the **only script that requires an external dependency**. All other scripts use the Python standard library only.
+
+### Usage
+
+```bash
+# Convert reports in the default assessment/ directory
+python3 convert_to_docx.py
+
+# Specify input and output directories
+python3 convert_to_docx.py --input-dir ./assessment --output-dir ./output
+
+# Uses OUTPUT_DIR environment variable as fallback default
+export OUTPUT_DIR="./assessment"
+python3 convert_to_docx.py
+```
+
+### What It Does
+
+- Converts `assessment/report.md` → `assessment/report.docx`
+- Converts `assessment/roadmap.md` → `assessment/roadmap.docx`
+- Skips missing `.md` files with a warning (doesn't crash)
+- Produces professional Word documents with:
+  - Cover page (title, organization name, date)
+  - Calibri fonts, 1-inch margins
+  - Page numbers in footer
+  - Properly formatted tables, headings, lists, and code blocks
+  - Emoji pass-through (✅ ⚠️ ❌ 🔴 🟡)
+
+### Example Output
+
+```
+$ python3 convert_to_docx.py
+Processing report.md...
+  → assessment/report.docx (39 KB)
+Processing roadmap.md...
+  → assessment/roadmap.docx (49 KB)
+
+========================================
+  DOCX Conversion Complete!
+  Files converted: 2
+========================================
+```
+
 ## Troubleshooting
 
 ### Authentication Failed
@@ -282,7 +336,7 @@ For organizations with >500 workspaces, consider increasing the timeout or runni
 ## Validation
 
 These scripts have been validated against:
-- ✅ `hashicorp-wwtfo-demo-platform-prod` (4 workspaces, 41 modules, 68 runs)
+- ✅ Production TFC organizations (4 workspaces, 41 modules, 68 runs)
 - ✅ Organizations with 0 policy sets (common initial state)
 - ✅ Organizations with 100+ workspaces
 - ✅ Both Terraform Cloud and Terraform Enterprise

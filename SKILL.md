@@ -87,7 +87,29 @@ This skill includes **production-ready, battle-tested scripts** in the `scripts/
 - Uses longest-match-first replacement to avoid partial substitutions
 - Processes all `.md` files in the assessment directory
 
-Both data collection scripts have been validated against production TFC organizations (including `hashicorp-wwtfo-demo-platform-prod` with 41 modules, 4 workspaces) and handle:
+### DOCX Conversion Script (Optional)
+
+**`scripts/convert_to_docx.py`**
+- Converts `assessment/report.md` and `assessment/roadmap.md` to `.docx` format
+- Professional formatting: cover page, page numbers, styled headings, tables
+- Handles all Markdown features used in reports (headings, bold, italic, tables, lists, code blocks, blockquotes, links)
+- **Requires**: `pip install python-docx` (the only external dependency in this skill)
+- Cross-platform (macOS, Linux, Windows)
+
+```bash
+# Install dependency (one-time)
+pip install python-docx
+
+# Convert reports to DOCX
+python3 scripts/convert_to_docx.py
+
+# Or specify custom directories
+python3 scripts/convert_to_docx.py --input-dir ./assessment --output-dir ./assessment
+```
+
+> **Note**: DOCX conversion is optional. The primary output format is Markdown (`.md`). Use this script when stakeholders require Word documents (e.g., for executive presentations, email attachments, or document management systems).
+
+Both data collection scripts have been validated against production TFC organizations and handle:
 - ✅ Pagination automatically (follows `links.next`)
 - ✅ Rate limiting gracefully (fail-safe on 429 errors)
 - ✅ Authentication validation
@@ -378,15 +400,101 @@ python3 scripts/collect_tfc_data.py
 - Terraform Cloud: `https://app.terraform.io/api/v2` (default)
 - Terraform Enterprise: `https://{TFE_URL}/api/v2` (set via TFC_API_BASE)
 
-**Main agent waits** for `assessment/data.json` to be created, then proceeds to evaluation.
+**Main agent waits** for `assessment/data.json` to be created, then proceeds to research and evaluation.
+
+### Step 2.5: Platform Research (Sub-Agent Required)
+
+🤖 **SPAWN SUB-AGENT**: `platform-research-agent`
+
+**Task**: "Research the latest HCP Terraform platform features, HVD Operating Guide documents, and module lifecycle best practices. Use web search tools to gather current information. Output structured JSON to assessment/platform-research.json."
+
+**Why this step exists**: Platform features evolve rapidly (e.g., Stacks GA'd in 2025, Actions GA'd in Dec 2025, Search GA'd in Terraform 1.14). Hardcoded feature status becomes stale. This agent ensures every assessment uses **current** information.
+
+**Sub-agent execution**:
+
+The `platform-research-agent` MUST use web search tools (e.g., `websearch`, `webfetch`) to research the following topics and return structured JSON:
+
+**Research Topics:**
+
+1. **HVD Operating Guides** — Search `developer.hashicorp.com/validated-designs` for:
+   - Current Terraform Operating Guide titles and URLs (Adoption, Standardization, Scaling)
+   - Whether any new Terraform HVD guides have been published
+   - Current status labels (e.g., "(Beta)" suffix on Scaling guide)
+
+2. **Platform Feature Availability** — For each feature, search for current GA/Beta/Preview status:
+   - **Terraform Stacks**: Multi-deployment orchestration. Search: `"Terraform Stacks" GA release site:hashicorp.com`
+   - **Terraform Search**: Discover & bulk-import unmanaged resources. Search: `"Terraform search" GA "Terraform 1.14" site:hashicorp.com`
+   - **Terraform Actions**: Day 2 operations (Ansible, Lambda). Search: `"Terraform actions" GA "Day 2" site:hashicorp.com`
+   - **Terraform MCP Server**: AI-assisted Terraform workflows. Search: `"Terraform MCP server" beta OR GA site:hashicorp.com`
+   - **Any new features announced** at recent HashiConf or blog posts
+
+3. **Module Lifecycle Features** — Search `developer.hashicorp.com/terraform/cloud-docs/registry` for:
+   - Module deprecation and revocation availability (which HCP Terraform editions?)
+   - Test-integrated module publishing status
+   - Explorer feature capabilities
+
+4. **Latest Terraform CLI Version** — Search for the latest stable Terraform CLI release version
+
+**Expected Output** (`assessment/platform-research.json`):
+
+```json
+{
+  "research_timestamp": "2026-02-09T10:00:00Z",
+  "research_quality": "full|partial|fallback",
+  "hvd_guides": {
+    "adoption": {"title": "Terraform: Operating Guide for Adoption", "url": "https://...", "status": "GA"},
+    "standardization": {"title": "Terraform: Operating Guide for Standardization", "url": "https://...", "status": "GA"},
+    "scaling": {"title": "Terraform: Operating Guide for Scaling", "url": "https://...", "status": "Beta"},
+    "solution_design": {"title": "Terraform: Solution Design Guide", "url": "https://...", "status": "GA"}
+  },
+  "platform_features": {
+    "stacks": {"name": "Terraform Stacks", "status": "GA|Beta|Preview", "description": "...", "doc_url": "https://...", "min_terraform_version": null},
+    "search": {"name": "Terraform Search", "status": "GA|Beta|Preview", "description": "...", "doc_url": "https://...", "min_terraform_version": "1.14"},
+    "actions": {"name": "Terraform Actions", "status": "GA|Beta|Preview", "description": "...", "doc_url": "https://...", "min_terraform_version": "1.14"},
+    "mcp_server": {"name": "Terraform MCP Server", "status": "GA|Beta|Preview", "description": "...", "doc_url": "https://...", "min_terraform_version": null}
+  },
+  "module_lifecycle": {
+    "deprecation": {"available": true, "edition": "Standard+", "doc_url": "https://..."},
+    "revocation": {"available": true, "edition": "Premium", "doc_url": "https://..."},
+    "test_integrated_publishing": {"available": true, "doc_url": "https://..."},
+    "explorer": {"available": true, "doc_url": "https://..."}
+  },
+  "latest_terraform_version": "1.14.x"
+}
+```
+
+**Fallback behavior**: If web search is unavailable or returns poor results, the agent MUST still return valid JSON with `"research_quality": "fallback"` using these known-good defaults:
+- HVD Adoption: `https://developer.hashicorp.com/validated-designs/terraform-operating-guides-adoption`
+- HVD Standardization: `https://developer.hashicorp.com/validated-designs/terraform-operating-guides-standardization`
+- HVD Scaling: `https://developer.hashicorp.com/validated-designs/terraform-operating-guides-scaling`
+- Stacks docs: `https://developer.hashicorp.com/terraform/cloud-docs/stacks`
+- Search docs: `https://developer.hashicorp.com/terraform/cloud-docs/workspaces/import`
+- Actions docs: `https://developer.hashicorp.com/terraform/language/invoke-actions`
+- MCP Server docs: `https://developer.hashicorp.com/terraform/mcp-server`
+
+**Main agent** waits for `assessment/platform-research.json`, then proceeds to evaluation.
 
 ### Step 3: Analysis (Multiple Sub-Agents)
 
 🤖 **SPAWN 6 PARALLEL SUB-AGENTS** (each analyzes one category):
 
-1. **`gitops-evaluator-agent`**: Read `assessment/data.json`, analyze VCS integration metrics, calculate GitOps score using the scoring rubric defined in the Scoring Model section below, return JSON with score and findings.
+1. **`gitops-evaluator-agent`**: Read `assessment/data.json` and `assessment/platform-research.json`. Analyze VCS integration metrics, calculate GitOps score using the scoring rubric defined in the Scoring Model section below. Additionally:
+   - Check for automation opportunities: if low VCS-triggered run % but high API-triggered runs, recommend evaluating **Terraform Actions** for Day 2 operations (status from platform research)
+   - If low VCS integration %, recommend **Terraform Search** for discovering and bulk-importing unmanaged resources (status from platform research)
+   - If multi-environment patterns detected (prod/staging/dev workspace naming, project-based environment separation), note as a candidate for **Terraform Stacks** evaluation
+   - Return JSON with score, findings, and `feature_opportunities` array
 
-2. **`pmr-evaluator-agent`**: Read `assessment/data.json`, analyze module library metrics, calculate PMR score, return JSON with score and findings.
+2. **`pmr-evaluator-agent`**: Read `assessment/data.json` and `assessment/platform-research.json`. Analyze module library metrics, calculate PMR score. Additionally:
+   - **Operating Model Detection**: Determine if the organization follows a **Service Catalog** or **Infrastructure Franchise** pattern based on:
+     - High module count relative to workspaces + centralized team structure → Service Catalog
+     - Distributed teams + diverse providers + policy guardrails → Infrastructure Franchise
+   - **Module Lifecycle Assessment**: Using platform research data, evaluate:
+     - Module deprecation/revocation practices (are retired modules deprecated or just abandoned?)
+     - Publishing workflow (branch-based with PMR tests vs tag-based with VCS pipelines)
+     - Version constraint practices (are consumers using pessimistic constraints `~>`?)
+     - Module update automation (Renovate/Dependabot configured?)
+   - **Explorer Usage**: Check if Explorer is being used for module usage visibility
+   - Return JSON with score, findings, `operating_model` classification, and `module_lifecycle` assessment
 
 3. **`policy-evaluator-agent`**: Read `assessment/data.json`, analyze policy coverage using the Policy Gap Handling section below, identify gaps (including custom policy needs), calculate Policy score, return JSON with score, findings, and gap analysis.
 
@@ -402,16 +510,54 @@ python3 scripts/collect_tfc_data.py
 
 🤖 **SPAWN SUB-AGENT**: `report-synthesizer-agent`
 
-**Task**: "Generate comprehensive assessment report from all evaluation results. Create executive summary, category breakdowns, prioritized recommendations, and roadmap. Output to assessment/report.md and assessment/roadmap.md."
+**Task**: "Generate comprehensive assessment report from all evaluation results AND `assessment/platform-research.json`. Create executive summary, category breakdowns, prioritized recommendations, and roadmap. Output to assessment/report.md and assessment/roadmap.md."
+
+**The report MUST include these sections** (in addition to standard category scores and recommendations):
+
+1. **HVD Document Citations**: Reference specific HVD Operating Guide titles by name in recommendations (e.g., "As described in the *Terraform: Operating Guide for Standardization*, module versioning should follow..."). Use URLs from `platform-research.json`.
+
+2. **Operating Model Analysis**: Based on `pmr-evaluator-agent`'s `operating_model` classification, include a section explaining whether the organization follows a **Service Catalog** or **Infrastructure Franchise** pattern, with this comparison table:
+
+   | Dimension | Service Catalog | Infrastructure Franchise |
+   |-----------|----------------|--------------------------|
+   | Primary UX | Vending portal (UI, ServiceNow, etc.) | Custom workflow (Git, API/CLI, CI/CD, etc.) |
+   | What can be built? | Standard modules only | Anything via IaC within defined guardrails |
+   | Customization | Limited (via module parameters) | Unlimited (within policy guardrails) |
+   | Primary security model | Validated modules | Guardrails (policy-as-code, etc.) |
+   | Target persona | Any — including business users, PMs | Development teams, SRE, etc. |
+
+3. **Platform Feature Opportunities**: Based on `gitops-evaluator-agent`'s `feature_opportunities` and platform research data, recommend relevant features with their current status (GA/Beta/Preview). Only include features whose status is GA or Beta. Include doc URLs from research.
+
+4. **Module Lifecycle & Publishing Recommendations**: Based on `pmr-evaluator-agent`'s `module_lifecycle` assessment:
+   - Deprecation/revocation workflow recommendations
+   - Publishing workflow improvements (branch-based vs tag-based)
+   - Version constraint best practices (pessimistic constraints `~>`)
+   - Automated update tooling (Renovate/Dependabot)
+   - Explorer for module usage visibility
+   - Workspace notifications for run events
 
 **Main agent** confirms report generation and displays summary to user.
 
-### Step 5: Completion (Main Agent)
+### Step 5: DOCX Conversion (Optional — Main Agent)
+
+**After report synthesis**, the main agent checks if `python-docx` is available and offers DOCX conversion:
+
+```bash
+# Check if python-docx is installed
+python3 -c "import docx" 2>/dev/null && echo "available" || echo "unavailable"
+```
+
+- If **available**: Run `python3 scripts/convert_to_docx.py` to generate `assessment/report.docx` and `assessment/roadmap.docx`
+- If **unavailable**: Inform user that DOCX conversion is available by installing `python-docx`: `pip install python-docx`
+
+This step is non-blocking — the assessment is complete regardless of DOCX conversion.
+
+### Step 6: Completion (Main Agent)
 
 Main agent provides user with:
 - Overall maturity score
-- Link to `assessment/report.md`
-- Link to `assessment/roadmap.md`
+- Link to `assessment/report.md` (and `assessment/report.docx` if generated)
+- Link to `assessment/roadmap.md` (and `assessment/roadmap.docx` if generated)
 - Top 3 recommendations
 
 Main agent context remains clean throughout - only orchestration and summary.
@@ -426,7 +572,7 @@ Main agent context remains clean throughout - only orchestration and summary.
 2. **Parallel Processing**: Multiple evaluation categories can be analyzed simultaneously (6 parallel evaluations: GitOps, PMR, Policy, Org, Ops, State Secrets).
 3. **Isolation**: Each sub-agent has a focused task and clean context.
 4. **Error Recovery**: If one sub-agent fails, others can continue.
-5. **Proven Performance**: Successfully evaluated `hashicorp-wwtfo-demo-platform-prod` (4 workspaces, 41 modules, 68 runs) in ~8 minutes with 8 parallel sub-agents.
+5. **Proven Performance**: Successfully evaluated production organizations (e.g., 4 workspaces, 41 modules, 68 runs) in ~10 minutes with 8 parallel sub-agents.
 
 ### Sub-Agent Execution Order
 
@@ -438,9 +584,13 @@ Main Agent (Orchestrator)
     ├─ [Step 2] SPAWN → data-collector-agent
     │           └─ Fetches all API data + scans states for secrets → assessment/data.json
     ↓
+    ├─ [Step 2.5] SPAWN → platform-research-agent
+    │             └─ Researches latest HVD docs, platform features, module lifecycle
+    │                 → assessment/platform-research.json
+    ↓
     ├─ [Step 3] SPAWN (6 parallel) → evaluation agents
-    │           ├─ gitops-evaluator-agent
-    │           ├─ pmr-evaluator-agent
+    │           ├─ gitops-evaluator-agent  (reads data.json + platform-research.json)
+    │           ├─ pmr-evaluator-agent     (reads data.json + platform-research.json)
     │           ├─ policy-evaluator-agent
     │           ├─ org-evaluator-agent
     │           ├─ ops-evaluator-agent
@@ -448,9 +598,11 @@ Main Agent (Orchestrator)
     │           └─ All return JSON with scores/findings
     ↓
     ├─ [Step 4] SPAWN → report-synthesizer-agent
-    │           └─ Generates final reports
+    │           └─ Reads all evals + platform-research.json → final reports
     ↓
-    └─ [Step 5] Display summary to user
+    ├─ [Step 5] (Optional) Convert .md → .docx if python-docx available
+    ↓
+    └─ [Step 6] Display summary to user
 ```
 
 ### Sub-Agent Definitions
@@ -458,13 +610,14 @@ Main Agent (Orchestrator)
 | Sub-Agent | Spawned By | Input | Output | Tools |
 |-----------|------------|-------|--------|-------|
 | `data-collector-agent` | Main | Credentials, API URL | `assessment/data.json` | curl, jq |
-| `gitops-evaluator-agent` | Main | `data.json` | JSON: score + findings | read_file |
-| `pmr-evaluator-agent` | Main | `data.json` | JSON: score + findings | read_file |
+| `platform-research-agent` | Main | Web search queries | `assessment/platform-research.json` | websearch, webfetch |
+| `gitops-evaluator-agent` | Main | `data.json`, `platform-research.json` | JSON: score + findings + feature_opportunities | read_file |
+| `pmr-evaluator-agent` | Main | `data.json`, `platform-research.json` | JSON: score + findings + operating_model + module_lifecycle | read_file |
 | `policy-evaluator-agent` | Main | `data.json` | JSON: score + gap analysis | read_file |
 | `org-evaluator-agent` | Main | `data.json` | JSON: score + findings | read_file |
 | `ops-evaluator-agent` | Main | `data.json` | JSON: score + findings | read_file |
 | `state-secrets-evaluator-agent` | Main | `data.json` (`state_secrets_check`) | JSON: score + findings + remediation | read_file |
-| `report-synthesizer-agent` | Main | All evaluation results | `report.md`, `roadmap.md` | create_file |
+| `report-synthesizer-agent` | Main | All evaluation results, `platform-research.json` | `report.md`, `roadmap.md` | create_file |
 
 ### Sub-Agent Communication Protocol
 
@@ -552,7 +705,7 @@ When customer needs are NOT covered by registry, the report flags:
 
 ## Lessons Learned from Production Use
 
-Based on the successful evaluation of `hashicorp-wwtfo-demo-platform-prod`, here are critical insights:
+Based on successful evaluations of production TFC organizations, here are critical insights:
 
 ### 1. Token Security & Handling
 
@@ -576,14 +729,15 @@ Main Agent → AskUserQuestion (collects token) → Environment variable → Sub
 
 **Measured Performance (4 workspaces, 41 modules):**
 - Data collection: **~30 seconds** (Python script)
+- Platform research: **~1-2 minutes** (web search for latest HVD docs, features, module lifecycle)
 - Parallel evaluations: **~5 minutes** (6 agents: GitOps, PMR, Policy, Org, Ops, State Secrets)
 - Report synthesis: **~3 minutes** (1 agent: consolidation + writing)
-- **Total: ~8 minutes**
+- **Total: ~10 minutes**
 
 **Scaling Estimates:**
-- 10 workspaces: ~10 minutes
-- 50 workspaces: ~15 minutes
-- 100+ workspaces: ~20-30 minutes
+- 10 workspaces: ~12 minutes
+- 50 workspaces: ~17 minutes
+- 100+ workspaces: ~25-35 minutes
 
 **Bottlenecks:**
 - Run sampling (20 runs × 10 workspaces = 200 API calls)
@@ -737,6 +891,12 @@ Save to assessment/gitops-eval.json. Use ONLY read_file - NO MCP servers.
 - ✅ `metadata.total_workspaces` matches expected count
 - ✅ At least one category has data (modules OR workspaces OR teams)
 
+**After Platform Research:**
+- ✅ `assessment/platform-research.json` exists and is valid JSON
+- ✅ `research_quality` field is present (`full`, `partial`, or `fallback`)
+- ✅ `hvd_guides` object has at least `adoption` and `standardization` entries
+- ✅ `platform_features` object has at least `stacks`, `search`, `actions` entries
+
 **After Evaluations:**
 - ✅ 6 evaluation JSON files exist (gitops, pmr, policy, org, ops, state-secrets)
 - ✅ Each has a `score` field (numeric)
@@ -748,9 +908,14 @@ Save to assessment/gitops-eval.json. Use ONLY read_file - NO MCP servers.
 - ✅ `roadmap.md` is >30 KB (detailed implementation plan)
 - ✅ Overall score is 0-100 (not null)
 
+**After DOCX Conversion (optional):**
+- ✅ `report.docx` exists if `python-docx` was available
+- ✅ `roadmap.docx` exists if `python-docx` was available
+- ✅ DOCX files open correctly in Word/Google Docs/LibreOffice
+
 ### 8. Demo Platform Insights
 
-**If evaluating a demo/sandbox platform (like wwtfo-demo):**
+**If evaluating a demo/sandbox platform:**
 
 **Expect:**
 - High module count (41+ modules for demos)
@@ -861,14 +1026,35 @@ Regardless of organization maturity, these are **always** actionable:
    - Enables cost allocation
    - Required for FinOps maturity
 
+6. **Enable Terraform Search for Resource Inventory** (1-2 hours, medium impact)
+   - Requires Terraform 1.14+ — check current version hygiene
+   - Discovers unmanaged resources across cloud accounts
+   - Enables bulk import into Terraform management
+   - Zero cost if already on compatible version
+
+7. **Evaluate Terraform Stacks for Multi-Environment Deployments** (4-8 hours assessment, high impact)
+   - If multi-environment patterns detected (prod/staging/dev workspace naming)
+   - Reduces workspace sprawl with coordinated multi-deployment orchestration
+   - GA feature — production ready
+
+8. **Implement Module Deprecation for Retired Modules** (1-2 hours, medium impact)
+   - If unused/abandoned modules detected in PMR
+   - Mark as deprecated (Standard edition) to warn consumers
+   - Prevents teams from adopting outdated modules
+
+9. **Connect Terraform MCP Server to AI Coding Assistant** (1-2 hours, low impact)
+   - ⚠️ Beta feature — evaluate for non-production use first
+   - Enables AI-assisted Terraform workflows (plan, apply, module search)
+   - Developer experience improvement for teams using AI coding tools
+
 ## Proven Results
 
 This skill has been successfully validated against real TFC organizations:
 
-**Test Case: `hashicorp-wwtfo-demo-platform-prod`**
+**Test Case: Internal Demo Platform**
 - Organization Size: 4 workspaces, 41 private modules, 68 runs sampled
 - Data Collection: 87 KB `data.json` generated in ~30 seconds
-- Evaluation: 6 parallel sub-agents completed in ~8 minutes
+- Evaluation: 6 parallel sub-agents completed in ~10 minutes
 - Output: 39 KB `report.md`, 49 KB `roadmap.md`
 - Results:
   - Overall Score: 60.5/100 (Adopting → Standardizing)
@@ -960,6 +1146,54 @@ This real-world validation proves the skill can handle production TFC organizati
 - Estimated effort: 2-4 weeks
 - Recommend: Engage HashiCorp Professional Services
 
+## Operating Model Analysis
+
+**Detected Pattern: Infrastructure Franchise**
+
+Your organization exhibits an Infrastructure Franchise operating model — development teams build custom IaC within policy guardrails rather than consuming pre-built modules from a vending portal.
+
+| Dimension | Service Catalog | Infrastructure Franchise |
+|-----------|----------------|--------------------------|
+| Primary UX | Vending portal (UI, ServiceNow) | **Custom workflow (Git, API/CLI, CI/CD)** ← You |
+| What can be built? | Standard modules only | **Anything via IaC within guardrails** ← You |
+| Customization | Limited (module parameters) | **Unlimited (within policy guardrails)** ← You |
+| Primary security model | Validated modules | **Guardrails (policy-as-code)** ← You |
+| Target persona | Business users, PMs | **Development teams, SRE** ← You |
+
+> As described in the *Terraform: Operating Guide for Standardization*, organizations following the Infrastructure Franchise pattern should prioritize policy-as-code guardrails and module versioning standards.
+
+## Platform Feature Opportunities
+
+Based on your organization's patterns and the current HCP Terraform platform capabilities:
+
+| Feature | Status | Relevance | Recommendation |
+|---------|--------|-----------|----------------|
+| **Terraform Stacks** | GA | High — Multi-environment patterns detected (prod/staging/dev) | Evaluate for multi-deployment orchestration |
+| **Terraform Search** | GA | Medium — Some unmanaged resources suspected | Use to discover and bulk-import unmanaged resources |
+| **Terraform Actions** | GA | Medium — Day 2 operational needs identified | Evaluate for configuration management workflows |
+| **Terraform MCP Server** | Beta | Low — Developer experience enhancement | Consider for AI-assisted Terraform workflows |
+
+> Feature status sourced from live platform research at time of assessment.
+
+## Module Lifecycle & Publishing
+
+### Current State
+- 2 modules in PMR, no deprecation practices observed
+- No test-integrated publishing detected
+- No version constraint standards enforced
+
+### Recommendations
+
+1. **Implement module deprecation workflow** — Mark retired modules as deprecated (available in Standard edition) rather than deleting them. This preserves history and warns consumers. ([Manage Module Versions](https://developer.hashicorp.com/terraform/cloud-docs/registry/manage-module-versions))
+
+2. **Adopt branch-based publishing with PMR tests** — Use branch-based publishing to run module tests before publication. This ensures only validated modules reach consumers. ([Test-Integrated Publishing](https://developer.hashicorp.com/terraform/cloud-docs/registry/test))
+
+3. **Enforce pessimistic version constraints** — Require all module consumers to use `~>` constraints (e.g., `~> 2.0`) to allow patch updates while preventing breaking changes. ([Version Constraints](https://developer.hashicorp.com/terraform/language/expressions/version-constraints))
+
+4. **Use Explorer for module usage visibility** — Explorer provides a dashboard of which workspaces consume which modules and at what versions. ([Explorer](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/explorer))
+
+5. **Configure automated update tooling** — For organizations with 15+ modules, set up Renovate or Dependabot to automatically create PRs when module versions update. ([Renovate Terraform Support](https://docs.renovatebot.com/modules/manager/terraform/))
+
 ## Recommendations
 
 ### Immediate (30 days)
@@ -987,6 +1221,72 @@ This real-world validation proves the skill can handle production TFC organizati
 2. **Expand PMR to 15+ modules**
 3. **Implement FinOps policies**
 ```
+
+## Report Template
+
+The `report-synthesizer-agent` MUST produce a report following this section structure. Sections marked **(conditional)** are only included when the data supports them.
+
+```
+# TFC Maturity Assessment: {Organization Name}
+
+## Executive Summary
+- Overall Score table (score, maturity level, stage)
+- Top Strengths (3 items)
+- Top Improvement Areas (3 items)
+
+## Category Scores
+- Table: Category | Score | Level
+
+## State Secrets Findings
+- Summary table (severity counts, workspaces affected)
+- Critical findings table (workspace, finding, attribute path)
+- Remediation steps with Terraform version-specific advice
+- Link to HashiCorp sensitive data docs
+
+## Operating Model Analysis (conditional)
+- Detected pattern: Service Catalog or Infrastructure Franchise
+- Comparison table with "← You" markers on detected pattern
+- HVD Operating Guide citation for the detected pattern
+- INCLUDE when: pmr-evaluator returns operating_model classification
+
+## Platform Feature Opportunities (conditional)
+- Table: Feature | Status | Relevance | Recommendation
+- Only include GA or Beta features
+- Feature status from platform-research.json (live research)
+- INCLUDE when: gitops-evaluator returns feature_opportunities array with 1+ items
+
+## Module Lifecycle & Publishing (conditional)
+- Current state summary
+- Numbered recommendations with doc links:
+  - Module deprecation/revocation workflow
+  - Publishing workflow (branch-based vs tag-based)
+  - Pessimistic version constraints (~>)
+  - Explorer for usage visibility
+  - Automated update tooling (Renovate/Dependabot)
+- INCLUDE when: organization has 1+ modules in PMR
+
+## Policy Gap Analysis
+- Available (Not Yet Adopted) — registry policies
+- Custom Development Needed — with effort estimates
+
+## Recommendations
+- Immediate (30 days) — with effort and impact
+- Short-term (90 days) — with effort and impact
+- Medium-term (6 months) — strategic items
+- HVD citations in recommendation text (e.g., "As described in the *Terraform: Operating Guide for Adoption*...")
+
+## References
+- HVD Operating Guide links (from platform-research.json)
+- Platform feature doc links (from platform-research.json)
+- Module lifecycle doc links (from platform-research.json)
+- TFC/TFE API documentation links
+```
+
+**Conditional Section Logic:**
+- If `operating_model` is null or undetermined → omit Operating Model Analysis section
+- If `feature_opportunities` is empty → omit Platform Feature Opportunities section
+- If 0 modules in PMR → omit Module Lifecycle section (recommend PMR adoption instead)
+- If platform research quality is `"fallback"` → add footnote: "Platform feature status based on cached data; verify current status at developer.hashicorp.com"
 
 ## Troubleshooting
 
@@ -1034,12 +1334,33 @@ TFC_TIMEOUT=300 /tfc-practice-evaluator
 
 ## References
 
+### HVD Operating Guides
 - [HVD Terraform Adoption Guide](https://developer.hashicorp.com/validated-designs/terraform-operating-guides-adoption)
 - [HVD Terraform Standardization Guide](https://developer.hashicorp.com/validated-designs/terraform-operating-guides-standardization)
 - [HVD Terraform Scaling Guide](https://developer.hashicorp.com/validated-designs/terraform-operating-guides-scaling)
+- [HVD Terraform Solution Design Guide](https://developer.hashicorp.com/validated-designs)
+
+### Platform Features
+- [Terraform Stacks](https://developer.hashicorp.com/terraform/cloud-docs/stacks) — Multi-deployment orchestration
+- [Terraform Search](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/import) — Discover and bulk-import unmanaged resources
+- [Terraform Actions](https://developer.hashicorp.com/terraform/language/invoke-actions) — Day 2 operations
+- [Terraform MCP Server](https://developer.hashicorp.com/terraform/mcp-server) — AI-assisted Terraform workflows
+
+### Module Lifecycle
+- [Manage Module Versions](https://developer.hashicorp.com/terraform/cloud-docs/registry/manage-module-versions) — Deprecation and revocation
+- [Test-Integrated Publishing](https://developer.hashicorp.com/terraform/cloud-docs/registry/test) — Module testing before publication
+- [Explorer](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/explorer) — Module usage visibility
+- [Version Constraints](https://developer.hashicorp.com/terraform/language/expressions/version-constraints) — Pessimistic constraints
+- [Workspace Notifications](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/settings/notifications) — Slack, Teams, Email, webhooks
+- [Renovate Terraform Support](https://docs.renovatebot.com/modules/manager/terraform/) — Automated module update PRs
+
+### API & General
 - [TFC API Documentation](https://developer.hashicorp.com/terraform/cloud-docs/api-docs)
 - [TFE API Documentation](https://developer.hashicorp.com/terraform/enterprise/api-docs)
 - [Terraform Registry Policies](https://registry.terraform.io/browse/policies)
+- [Managing Sensitive Data in Terraform](https://developer.hashicorp.com/terraform/language/manage-sensitive-data)
+
+> **Note**: The `platform-research-agent` fetches current URLs at runtime via web search. The links above are fallback references that were accurate as of the last skill update.
 
 ## Skill Structure
 
@@ -1051,11 +1372,18 @@ tfc-practice-evaluator/
 │   ├── collect_tfc_data.py          # Data collection - Python (recommended)
 │   ├── collect_tfc_data.sh          # Data collection - Bash
 │   ├── obfuscate_data.py            # Obfuscate data.json for SE-assisted mode
-│   └── deobfuscate_report.py        # Deobfuscate reports after SE analysis
+│   ├── deobfuscate_report.py        # Deobfuscate reports after SE analysis
+│   └── convert_to_docx.py          # Convert .md reports to .docx (optional, requires python-docx)
+├── sample/                           # Sample output files
+│   ├── report.md                     # Example assessment report
+│   └── obfuscation_map.json         # Example obfuscation map structure
+├── tests/                            # Test suite
+│   └── test_state_scan.py           # State secrets scanner tests
 
 Output (created during execution):
 assessment/
 ├── data.json                         # Raw TFC data (87 KB for demo org)
+├── platform-research.json            # Live platform research results (HVD, features, lifecycle)
 ├── data_obfuscated.json              # Obfuscated data (Mode 2 only, safe to share)
 ├── obfuscation_map.json              # Hash-to-name mapping (Mode 2 only, KEEP PRIVATE)
 ├── gitops-eval.json                  # GitOps evaluation results
@@ -1065,9 +1393,8 @@ assessment/
 ├── ops-eval.json                     # Operations evaluation results
 ├── state-secrets-eval.json           # State secrets evaluation results
 ├── report.md                         # Executive assessment report
-└── roadmap.md                        # 6-month implementation roadmap
+├── report.docx                       # Executive assessment report (DOCX, optional)
+├── roadmap.md                        # 6-month implementation roadmap
+└── roadmap.docx                      # 6-month implementation roadmap (DOCX, optional)
 ```
 
-## References
-
-This skill's scoring rubrics, policy gap analysis, and evaluation criteria are all embedded inline in this document (see Scoring Model, Policy Gap Handling, and Sub-Agent Prompt Patterns sections above).

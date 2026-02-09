@@ -4,14 +4,14 @@ Quick test for state secrets scanning patterns.
 Validates that scan_state_for_secrets() detects known secret patterns
 and correctly ignores false positives.
 
-Usage: python3 test_state_scan.py
+Usage: python3 tests/test_state_scan.py
 """
 
 import sys
 import os
 
 # Add scripts directory to path so we can import the functions
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scripts"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 
 # We need to set dummy env vars before importing (the module reads them at import time)
 os.environ.setdefault("TFC_TOKEN", "test-token")

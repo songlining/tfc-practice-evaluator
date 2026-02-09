@@ -1,1 +1,5 @@
-prompt.md
+.sisyphus/
+.ruff_cache/
+prompts/
+__pycache__/
+*.pyc
