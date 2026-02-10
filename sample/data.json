@@ -11,8 +11,8 @@
         "tags-regex": null,
         "identifier": "repo-0038c66606b1",
         "display-identifier": "repo-0038c66606b1",
-        "github-app-installation-id": "ghain-DWZkmKDd8TxMuPn6",
-        "repository-http-url": "https://github.com/hashicorp/demo-terraform-workspaces-projects-rbac",
+        "github-app-installation-id": "ghain-XXXXXXXXXXXX",
+        "repository-http-url": "https://github.com/acme-corp/terraform-workspaces-config",
         "service-provider": "github_app"
       },
       "terraform_version": "1.9.6",
@@ -33,8 +33,8 @@
         "tags-regex": null,
         "identifier": "repo-0038c66606b1",
         "display-identifier": "repo-0038c66606b1",
-        "github-app-installation-id": "ghain-DWZkmKDd8TxMuPn6",
-        "repository-http-url": "https://github.com/hashicorp/demo-terraform-workspaces-projects-rbac",
+        "github-app-installation-id": "ghain-XXXXXXXXXXXX",
+        "repository-http-url": "https://github.com/acme-corp/terraform-workspaces-config",
         "service-provider": "github_app"
       },
       "terraform_version": "1.9.6",
@@ -55,8 +55,8 @@
         "tags-regex": null,
         "identifier": "repo-0038c66606b1",
         "display-identifier": "repo-0038c66606b1",
-        "github-app-installation-id": "ghain-DWZkmKDd8TxMuPn6",
-        "repository-http-url": "https://github.com/hashicorp/demo-terraform-workspaces-projects-rbac",
+        "github-app-installation-id": "ghain-XXXXXXXXXXXX",
+        "repository-http-url": "https://github.com/acme-corp/terraform-workspaces-config",
         "service-provider": "github_app"
       },
       "terraform_version": "1.9.6",
@@ -77,8 +77,8 @@
         "tags-regex": null,
         "identifier": "repo-b739c62fabfc",
         "display-identifier": "repo-b739c62fabfc",
-        "github-app-installation-id": "ghain-DWZkmKDd8TxMuPn6",
-        "repository-http-url": "https://github.com/hashicorp/demo-autobahn-vpm",
+        "github-app-installation-id": "ghain-XXXXXXXXXXXX",
+        "repository-http-url": "https://github.com/acme-corp/infra-vpm-config",
         "service-provider": "github_app"
       },
       "terraform_version": "~>1.10.0",
@@ -776,7 +776,7 @@
   "modules": [
     {
       "id": "modid-e0cbe277b519",
-      "name": "mod-c9f1d59a0311",
+      "name": "mod-EXAMPLE00035",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -804,7 +804,7 @@
     },
     {
       "id": "modid-16c49cfccb89",
-      "name": "mod-c87043fff0b0",
+      "name": "mod-EXAMPLE00034",
       "provider": "boundary",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -973,7 +973,7 @@
     },
     {
       "id": "modid-a8b1930b4b6d",
-      "name": "mod-641e996956e8",
+      "name": "mod-EXAMPLE00017",
       "provider": "nomad",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -1069,7 +1069,7 @@
     },
     {
       "id": "modid-05a806b76e97",
-      "name": "mod-46191f7340aa",
+      "name": "mod-EXAMPLE00013",
       "provider": "waypoint",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -1189,7 +1189,7 @@
     },
     {
       "id": "modid-c1a9ebed8e78",
-      "name": "mod-5acfeedfcc23",
+      "name": "mod-EXAMPLE00015",
       "provider": "waypoint",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -1245,7 +1245,7 @@
     },
     {
       "id": "modid-2b8690315944",
-      "name": "mod-9a884fc02b70",
+      "name": "mod-EXAMPLE00027",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -1313,7 +1313,7 @@
     },
     {
       "id": "modid-6239b5f555ee",
-      "name": "mod-4395e6a89f81",
+      "name": "mod-EXAMPLE00012",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -1333,7 +1333,7 @@
     },
     {
       "id": "modid-47879d305756",
-      "name": "mod-fec8d3797fa5",
+      "name": "mod-EXAMPLE00041",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -1413,7 +1413,7 @@
     },
     {
       "id": "modid-ec10e651b2c9",
-      "name": "mod-188adfd18a6e",
+      "name": "mod-EXAMPLE00002",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -1697,7 +1697,7 @@
     },
     {
       "id": "modid-d6a03f2fee3a",
-      "name": "mod-2f1e4b7a1307",
+      "name": "mod-EXAMPLE00007",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -1801,7 +1801,7 @@
     },
     {
       "id": "modid-87ad63bf588d",
-      "name": "mod-711a2b009bbb",
+      "name": "mod-EXAMPLE00020",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -1857,7 +1857,7 @@
     },
     {
       "id": "modid-eb74cae1c574",
-      "name": "mod-b733acf901d9",
+      "name": "mod-EXAMPLE00031",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -1933,7 +1933,7 @@
     },
     {
       "id": "modid-557358d7ad90",
-      "name": "mod-2474f5aac6e6",
+      "name": "mod-EXAMPLE00006",
       "provider": "hvs",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2021,7 +2021,7 @@
     },
     {
       "id": "modid-36df0e81e0fe",
-      "name": "mod-fe81759e6cd2",
+      "name": "mod-EXAMPLE00040",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2105,7 +2105,7 @@
     },
     {
       "id": "modid-285ce43407fc",
-      "name": "mod-fb36b356bd2f",
+      "name": "mod-EXAMPLE00039",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2181,7 +2181,7 @@
     },
     {
       "id": "modid-3cf7c0c48f3a",
-      "name": "mod-d309965946f1",
+      "name": "mod-EXAMPLE00037",
       "provider": "util",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2225,7 +2225,7 @@
     },
     {
       "id": "modid-5ed060a26def",
-      "name": "mod-8952ef20dad1",
+      "name": "mod-EXAMPLE00023",
       "provider": "util",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2278,7 +2278,7 @@
     },
     {
       "id": "modid-25b6a01ead06",
-      "name": "mod-d04a57dcd9f2",
+      "name": "mod-EXAMPLE00036",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2354,7 +2354,7 @@
     },
     {
       "id": "modid-80a7b072dd84",
-      "name": "mod-604f9d085ede",
+      "name": "mod-EXAMPLE00016",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2390,7 +2390,7 @@
     },
     {
       "id": "modid-ecb1f2af52f9",
-      "name": "mod-c10f906b0ba1",
+      "name": "mod-EXAMPLE00032",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2442,7 +2442,7 @@
     },
     {
       "id": "modid-873f080a3584",
-      "name": "mod-6aded0c7c45b",
+      "name": "mod-EXAMPLE00018",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2482,7 +2482,7 @@
     },
     {
       "id": "modid-d81b7fc03d4d",
-      "name": "mod-8c19c9ca33d1",
+      "name": "mod-EXAMPLE00024",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2558,7 +2558,7 @@
     },
     {
       "id": "modid-bc652aab0a1d",
-      "name": "mod-9f70be556ec2",
+      "name": "mod-EXAMPLE00028",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2630,7 +2630,7 @@
     },
     {
       "id": "modid-8f0177c202b7",
-      "name": "mod-7ecb35131a8b",
+      "name": "mod-EXAMPLE00021",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2702,7 +2702,7 @@
     },
     {
       "id": "modid-1ea5972b17cf",
-      "name": "mod-20ba54e68cad",
+      "name": "mod-EXAMPLE00005",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2746,7 +2746,7 @@
     },
     {
       "id": "modid-7acc3fb7b10e",
-      "name": "mod-3976a9e4530b",
+      "name": "mod-EXAMPLE00009",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2806,7 +2806,7 @@
     },
     {
       "id": "modid-1a77349ed854",
-      "name": "mod-3cc6dd48bfc4",
+      "name": "mod-EXAMPLE00011",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2858,7 +2858,7 @@
     },
     {
       "id": "modid-18bc0884075f",
-      "name": "mod-0b4b2c231942",
+      "name": "mod-EXAMPLE00001",
       "provider": "consul",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -2886,7 +2886,7 @@
     },
     {
       "id": "modid-5eaf7ac4c5e1",
-      "name": "mod-90c058f16552",
+      "name": "mod-EXAMPLE00025",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3010,7 +3010,7 @@
     },
     {
       "id": "modid-184ba7afd2e3",
-      "name": "mod-6af29a54d474",
+      "name": "mod-EXAMPLE00019",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3094,7 +3094,7 @@
     },
     {
       "id": "modid-3b196d955964",
-      "name": "mod-3c9258657aa4",
+      "name": "mod-EXAMPLE00010",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3114,7 +3114,7 @@
     },
     {
       "id": "modid-f11ebde16cce",
-      "name": "mod-2f89d930d07a",
+      "name": "mod-EXAMPLE00008",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3134,7 +3134,7 @@
     },
     {
       "id": "modid-0562319755e7",
-      "name": "mod-4b6231f1e8c0",
+      "name": "mod-EXAMPLE00014",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3234,7 +3234,7 @@
     },
     {
       "id": "modid-847e95ba1f48",
-      "name": "mod-1adba024b465",
+      "name": "mod-EXAMPLE00004",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3254,7 +3254,7 @@
     },
     {
       "id": "modid-3c68cb8744dd",
-      "name": "mod-928170ee00c9",
+      "name": "mod-EXAMPLE00026",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3342,7 +3342,7 @@
     },
     {
       "id": "modid-84d0a0dfa3dd",
-      "name": "mod-198cbdb32330",
+      "name": "mod-EXAMPLE00003",
       "provider": "vault",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3398,7 +3398,7 @@
     },
     {
       "id": "modid-00e80bb081c6",
-      "name": "mod-8894bab3ee71",
+      "name": "mod-EXAMPLE00022",
       "provider": "vaultradar",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3494,7 +3494,7 @@
     },
     {
       "id": "modid-7a9fe5932132",
-      "name": "mod-e2e037e22739",
+      "name": "mod-EXAMPLE00038",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3642,7 +3642,7 @@
     },
     {
       "id": "modid-d2891d879a16",
-      "name": "mod-abbdcb31bdfc",
+      "name": "mod-EXAMPLE00030",
       "provider": "autobahn",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3726,7 +3726,7 @@
     },
     {
       "id": "modid-3d2c3cd2f54b",
-      "name": "mod-a763e28489fd",
+      "name": "mod-EXAMPLE00029",
       "provider": "util",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [
@@ -3786,7 +3786,7 @@
     },
     {
       "id": "modid-9753bca156d4",
-      "name": "mod-c1ace68ded9f",
+      "name": "mod-EXAMPLE00033",
       "provider": "terraform",
       "namespace": "ns-e19c87909f9d",
       "version_statuses": [

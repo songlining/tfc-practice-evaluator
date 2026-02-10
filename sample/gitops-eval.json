@@ -11,10 +11,10 @@
       "max": 8,
       "detail": "4/4 workspaces (100%) have VCS repositories connected",
       "workspaces": {
-        "ws-aa1bbf21273d": "repo-0038c66606b1 (hashicorp/demo-terraform-workspaces-projects-rbac)",
-        "ws-e2ab44612647": "repo-0038c66606b1 (hashicorp/demo-terraform-workspaces-projects-rbac)",
-        "ws-8c168b8f9329": "repo-0038c66606b1 (hashicorp/demo-terraform-workspaces-projects-rbac)",
-        "ws-cdfaef0fb16a": "repo-b739c62fabfc (hashicorp/demo-autobahn-vpm)"
+        "ws-aa1bbf21273d": "repo-0038c66606b1 (acme-corp/terraform-workspaces-config)",
+        "ws-e2ab44612647": "repo-0038c66606b1 (acme-corp/terraform-workspaces-config)",
+        "ws-8c168b8f9329": "repo-0038c66606b1 (acme-corp/terraform-workspaces-config)",
+        "ws-cdfaef0fb16a": "repo-b739c62fabfc (acme-corp/infra-vpm-config)"
       }
     },
     "speculative_plans": {

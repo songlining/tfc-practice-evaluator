@@ -1,0 +1,77 @@
+{
+  "research_timestamp": "2026-02-10T01:15:00Z",
+  "research_quality": "full",
+  "hvd_guides": {
+    "adoption": {
+      "title": "Terraform: Operating Guide for Adoption",
+      "url": "https://developer.hashicorp.com/validated-designs/terraform-operating-guides-adoption",
+      "status": "GA"
+    },
+    "standardization": {
+      "title": "Terraform: Operating Guide for Standardization",
+      "url": "https://developer.hashicorp.com/validated-designs/terraform-operating-guides-standardization",
+      "status": "GA"
+    },
+    "scaling": {
+      "title": "Terraform: Operating Guide for Scaling",
+      "url": "https://developer.hashicorp.com/validated-designs/terraform-operating-guides-scaling",
+      "status": "Beta"
+    },
+    "solution_design": {
+      "title": "Terraform: Solution Design Guide",
+      "url": "https://developer.hashicorp.com/validated-designs",
+      "status": "GA"
+    }
+  },
+  "platform_features": {
+    "stacks": {
+      "name": "Terraform Stacks",
+      "status": "GA",
+      "description": "Multi-deployment orchestration for repeatable infrastructure units across environments, regions, accounts",
+      "doc_url": "https://developer.hashicorp.com/terraform/cloud-docs/stacks",
+      "min_terraform_version": null
+    },
+    "search": {
+      "name": "Terraform Search",
+      "status": "GA",
+      "description": "Discover and bulk-import unmanaged cloud resources into Terraform state",
+      "doc_url": "https://developer.hashicorp.com/terraform/cloud-docs/workspaces/import",
+      "min_terraform_version": "1.14"
+    },
+    "actions": {
+      "name": "Terraform Actions",
+      "status": "GA",
+      "description": "Day 2 infrastructure operations - Ansible, Lambda, lifecycle hooks",
+      "doc_url": "https://developer.hashicorp.com/terraform/language/invoke-actions",
+      "min_terraform_version": "1.14"
+    },
+    "mcp_server": {
+      "name": "Terraform MCP Server",
+      "status": "GA",
+      "description": "AI-assisted Terraform workflows via Model Context Protocol, v0.4 with Stacks and policy support",
+      "doc_url": "https://developer.hashicorp.com/terraform/mcp-server",
+      "min_terraform_version": null
+    }
+  },
+  "module_lifecycle": {
+    "deprecation": {
+      "available": true,
+      "edition": "Standard",
+      "doc_url": "https://developer.hashicorp.com/terraform/cloud-docs/registry/manage-module-versions"
+    },
+    "revocation": {
+      "available": true,
+      "edition": "Premium",
+      "doc_url": "https://developer.hashicorp.com/terraform/cloud-docs/registry/manage-module-versions"
+    },
+    "test_integrated_publishing": {
+      "available": true,
+      "doc_url": "https://developer.hashicorp.com/terraform/cloud-docs/registry/test"
+    },
+    "explorer": {
+      "available": true,
+      "doc_url": "https://developer.hashicorp.com/terraform/cloud-docs/workspaces/explorer"
+    }
+  },
+  "latest_terraform_version": "1.14.4"
+}

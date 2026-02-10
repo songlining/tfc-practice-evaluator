@@ -8,9 +8,9 @@
 
 A Claude AI skill that analyzes your TFC/TFE organization and provides:
 
-- **Maturity Score** aligned to Adopt → Standardize → Scale stages
+- **Maturity Stage** aligned to Adopt → Standardize → Scale stages
 - **Category Assessments** for GitOps, Modules, Policies, Organization, and Operations
-- **Gap Analysis** identifying missing policies and configurations
+- **Observations & Opportunities** identifying current state and areas for improvement
 - **Prioritized Recommendations** with business value justification
 - **Roadmap** for maturity progression
 
@@ -85,13 +85,13 @@ Claude: I'll analyze your Terraform Cloud organization against HashiCorp
 
         📊 Assessment Complete!
         
-        Overall Maturity: Standardize (67%)
+        Overall Maturity Stage: Standardize
         
-        ✅ GitOps:       82% - Strong VCS integration
-        ⚠️ Modules:      45% - Limited PMR adoption
-        ❌ Policies:     20% - Missing critical policies
-        ✅ Organization: 75% - Good team structure
-        ✅ Operations:   85% - Healthy run patterns
+        GitOps & VCS:         Standardize — Strong VCS integration
+        Module Library:       Adopt — Limited PMR adoption
+        Policy-as-Code:       Adopt — No policy sets configured
+        Organization & Teams: Standardize — Good team structure
+        Operations & Health:  Standardize — Healthy run patterns
         
         Top 3 Recommendations:
         1. Enable Sentinel policies for security guardrails

@@ -7,10 +7,10 @@ description: Evaluate HCP Terraform (Terraform Cloud) or Terraform Enterprise or
 
 ## Overview
 
-This skill evaluates a customer's HCP Terraform (Terraform Cloud) or Terraform Enterprise organization against HashiCorp Validated Designs (HVD) best practices. It produces a comprehensive maturity assessment with:
+This skill evaluates a customer's HCP Terraform (Terraform Cloud) or Terraform Enterprise organization against HashiCorp Validated Designs (HVD) best practices. It produces a comprehensive observation-based assessment with:
 
-- **Overall maturity score** aligned to Adopt → Standardize → Scale stages
-- **Category scores** for GitOps, Modules, Policies, Organization, and Operations
+- **Overall maturity stage** (Adopt → Standardize → Scale) aligned to HVD Operating Guides
+- **Category observations** for GitOps, Modules, Policies, Organization, and Operations
 - **Gap analysis** identifying missing policies (including when custom development is needed)
 - **Prioritized recommendations** with business value justification
 - **Roadmap** for maturity progression
@@ -478,13 +478,13 @@ The `platform-research-agent` MUST use web search tools (e.g., `websearch`, `web
 
 🤖 **SPAWN 6 PARALLEL SUB-AGENTS** (each analyzes one category):
 
-1. **`gitops-evaluator-agent`**: Read `assessment/data.json` and `assessment/platform-research.json`. Analyze VCS integration metrics, calculate GitOps score using the scoring rubric defined in the Scoring Model section below. Additionally:
+1. **`gitops-evaluator-agent`**: Read `assessment/data.json` and `assessment/platform-research.json`. Analyze VCS integration metrics, determine GitOps maturity stage (Adopt/Standardize/Scale) based on observations. Additionally:
    - Check for automation opportunities: if low VCS-triggered run % but high API-triggered runs, recommend evaluating **Terraform Actions** for Day 2 operations (status from platform research)
    - If low VCS integration %, recommend **Terraform Search** for discovering and bulk-importing unmanaged resources (status from platform research)
    - If multi-environment patterns detected (prod/staging/dev workspace naming, project-based environment separation), note as a candidate for **Terraform Stacks** evaluation
-   - Return JSON with score, findings, and `feature_opportunities` array
+   - Return JSON with maturity_stage, observations, strengths, opportunities, and `feature_opportunities` array
 
-2. **`pmr-evaluator-agent`**: Read `assessment/data.json` and `assessment/platform-research.json`. Analyze module library metrics, calculate PMR score. Additionally:
+2. **`pmr-evaluator-agent`**: Read `assessment/data.json` and `assessment/platform-research.json`. Analyze module library metrics, determine PMR maturity stage. Additionally:
    - **Operating Model Detection**: Determine if the organization follows a **Service Catalog** or **Infrastructure Franchise** pattern based on:
      - High module count relative to workspaces + centralized team structure → Service Catalog
      - Distributed teams + diverse providers + policy guardrails → Infrastructure Franchise
@@ -494,17 +494,17 @@ The `platform-research-agent` MUST use web search tools (e.g., `websearch`, `web
      - Version constraint practices (are consumers using pessimistic constraints `~>`?)
      - Module update automation (Renovate/Dependabot configured?)
    - **Explorer Usage**: Check if Explorer is being used for module usage visibility
-   - Return JSON with score, findings, `operating_model` classification, and `module_lifecycle` assessment
+   - Return JSON with maturity_stage, observations, strengths, opportunities, `operating_model` classification, and `module_lifecycle` assessment
 
-3. **`policy-evaluator-agent`**: Read `assessment/data.json`, analyze policy coverage using the Policy Gap Handling section below, identify gaps (including custom policy needs), calculate Policy score, return JSON with score, findings, and gap analysis.
+3. **`policy-evaluator-agent`**: Read `assessment/data.json`, analyze policy coverage using the Policy Gap Handling section below, identify gaps (including custom policy needs), determine Policy maturity stage, return JSON with maturity_stage, observations, strengths, opportunities, and gap analysis.
 
-4. **`org-evaluator-agent`**: Read `assessment/data.json`, analyze team structure and organization, calculate Org score, return JSON with score and findings.
+4. **`org-evaluator-agent`**: Read `assessment/data.json`, analyze team structure and organization, determine Org maturity stage, return JSON with maturity_stage, observations, strengths, and opportunities.
 
-5. **`ops-evaluator-agent`**: Read `assessment/data.json`, analyze run health and operations, calculate Ops score, return JSON with score and findings.
+5. **`ops-evaluator-agent`**: Read `assessment/data.json`, analyze run health and operations, determine Ops maturity stage, return JSON with maturity_stage, observations, strengths, and opportunities.
 
-6. **`state-secrets-evaluator-agent`**: Read `assessment/data.json` `state_secrets_check` section, summarise findings per workspace, calculate State Secrets score (0 findings = perfect, any finding = critical), provide remediation recommendations referencing https://developer.hashicorp.com/terraform/language/manage-sensitive-data, return JSON with score, findings, and remediation plan.
+6. **`state-secrets-evaluator-agent`**: Read `assessment/data.json` `state_secrets_check` section, summarise findings per workspace, determine State Secrets status (0 findings = clean, any finding = critical), provide remediation recommendations referencing https://developer.hashicorp.com/terraform/language/manage-sensitive-data, return JSON with maturity_stage, observations, strengths, opportunities, and remediation plan.
 
-**Main agent** collects all 6 results and consolidates into overall scores.
+**Main agent** collects all 6 results and consolidates into an overall maturity assessment.
 
 ### Step 4: Report Synthesis (Sub-Agent Required)
 
@@ -512,7 +512,7 @@ The `platform-research-agent` MUST use web search tools (e.g., `websearch`, `web
 
 **Task**: "Generate comprehensive assessment report from all evaluation results AND `assessment/platform-research.json`. Create executive summary, category breakdowns, prioritized recommendations, and roadmap. Output to assessment/report.md and assessment/roadmap.md."
 
-**The report MUST include these sections** (in addition to standard category scores and recommendations):
+**The report MUST include these sections** (in addition to category observations and recommendations):
 
 1. **HVD Document Citations**: Reference specific HVD Operating Guide titles by name in recommendations (e.g., "As described in the *Terraform: Operating Guide for Standardization*, module versioning should follow..."). Use URLs from `platform-research.json`.
 
@@ -555,7 +555,7 @@ This step is non-blocking — the assessment is complete regardless of DOCX conv
 ### Step 6: Completion (Main Agent)
 
 Main agent provides user with:
-- Overall maturity score
+- Overall maturity stage (Adopt / Standardize / Scale)
 - Link to `assessment/report.md` (and `assessment/report.docx` if generated)
 - Link to `assessment/roadmap.md` (and `assessment/roadmap.docx` if generated)
 - Top 3 recommendations
@@ -595,7 +595,7 @@ Main Agent (Orchestrator)
     │           ├─ org-evaluator-agent
     │           ├─ ops-evaluator-agent
     │           └─ state-secrets-evaluator-agent
-    │           └─ All return JSON with scores/findings
+    │           └─ All return JSON with observations/findings
     ↓
     ├─ [Step 4] SPAWN → report-synthesizer-agent
     │           └─ Reads all evals + platform-research.json → final reports
@@ -611,12 +611,12 @@ Main Agent (Orchestrator)
 |-----------|------------|-------|--------|-------|
 | `data-collector-agent` | Main | Credentials, API URL | `assessment/data.json` | curl, jq |
 | `platform-research-agent` | Main | Web search queries | `assessment/platform-research.json` | websearch, webfetch |
-| `gitops-evaluator-agent` | Main | `data.json`, `platform-research.json` | JSON: score + findings + feature_opportunities | read_file |
-| `pmr-evaluator-agent` | Main | `data.json`, `platform-research.json` | JSON: score + findings + operating_model + module_lifecycle | read_file |
-| `policy-evaluator-agent` | Main | `data.json` | JSON: score + gap analysis | read_file |
-| `org-evaluator-agent` | Main | `data.json` | JSON: score + findings | read_file |
-| `ops-evaluator-agent` | Main | `data.json` | JSON: score + findings | read_file |
-| `state-secrets-evaluator-agent` | Main | `data.json` (`state_secrets_check`) | JSON: score + findings + remediation | read_file |
+| `gitops-evaluator-agent` | Main | `data.json`, `platform-research.json` | JSON: maturity_stage + observations + feature_opportunities | read_file |
+| `pmr-evaluator-agent` | Main | `data.json`, `platform-research.json` | JSON: maturity_stage + observations + operating_model + module_lifecycle | read_file |
+| `policy-evaluator-agent` | Main | `data.json` | JSON: maturity_stage + gap analysis | read_file |
+| `org-evaluator-agent` | Main | `data.json` | JSON: maturity_stage + observations | read_file |
+| `ops-evaluator-agent` | Main | `data.json` | JSON: maturity_stage + observations | read_file |
+| `state-secrets-evaluator-agent` | Main | `data.json` (`state_secrets_check`) | JSON: maturity_stage + observations + remediation | read_file |
 | `report-synthesizer-agent` | Main | All evaluation results, `platform-research.json` | `report.md`, `roadmap.md` | create_file |
 
 ### Sub-Agent Communication Protocol
@@ -636,44 +636,50 @@ Main Agent (Orchestrator)
 
 ```
 Main Agent: runSubagent(
-  prompt: "Read assessment/data.json. Count workspaces with vcs_repo configured. Calculate percentage. Using the scoring rubric from the Scoring Model section of SKILL.md, evaluate VCS Integration criterion and return JSON: {score: X, findings: ['...']}. Use ONLY read_file - NO MCP servers.",
+  prompt: "Read assessment/data.json. Count workspaces with vcs_repo configured. Calculate percentage. Determine the maturity stage (Adopt/Standardize/Scale) based on VCS integration patterns and return JSON: {maturity_stage: 'X', observations: ['...'], strengths: ['...'], opportunities: ['...']}. Use ONLY read_file - NO MCP servers.",
   description: "GitOps Evaluation"
 )
 ```
 
-## Scoring Model
+## Maturity Stage Model
 
-### Category Weights
+This skill uses the three HVD maturity stages as the sole progress framework. There are **no numerical scores** — only observations, strengths, and opportunities organized by maturity stage.
 
-| Category | Weight | Primary Stage |
-|----------|--------|---------------|
-| GitOps & VCS | 25% | Adopt |
-| Module Library | 20% | Standardize |
-| Policy-as-Code | 25% | Scale |
-| Organization | 15% | All |
-| Operations | 15% | All |
+### Maturity Stages
 
-**State Secrets Hygiene** is evaluated as a **critical overlay** rather than a weighted category. Any findings act as a maturity cap:
+| Stage | Description | Indicators |
+|-------|-------------|------------|
+| **Adopt** | Organization is onboarding to TFC/TFE | VCS integration in progress, few or no private modules, no policies, basic team structure, early run patterns |
+| **Standardize** | Consistent practices being established across the organization | VCS fully integrated, module library growing and versioned, policies deploying (advisory → enforcement), RBAC structured with multiple teams, regular run cadence |
+| **Scale** | Organization operating at scale with self-service and automation | Full policy enforcement with custom policies, module lifecycle automated (deprecation, testing, publishing), advanced features adopted (Stacks, Actions, Search), self-service provisioning |
+
+### Stage Determination per Category
+
+Each evaluator agent determines a maturity stage for its category based on qualitative assessment of the data:
+
+| Category | Adopt Indicators | Standardize Indicators | Scale Indicators |
+|----------|-----------------|----------------------|-----------------|
+| **GitOps & VCS** | <50% VCS integration, mostly manual runs | 80%+ VCS integration, speculative plans enabled, remote execution | 100% VCS, CI/CD orchestration, Terraform Actions adopted |
+| **Module Library** | 0-5 modules, minimal versioning | 10+ modules, active versioning, provider coverage growing | Module lifecycle management, deprecation workflows, automated publishing |
+| **Policy-as-Code** | No policies deployed | Advisory policies in place, some workspace coverage | Full enforcement, custom policies, 80%+ workspace coverage |
+| **Organization** | Single team, no projects | Multiple teams with RBAC, projects organized, variable sets in use | Self-service provisioning, granular RBAC, workspace standards enforced |
+| **Operations** | Irregular runs, version drift | Regular run cadence, 80%+ success rate, versions within 2 releases | 95%+ success rate, automated health monitoring, proactive maintenance |
+
+### Overall Maturity Stage
+
+The overall maturity stage is determined by the **lowest category stage**, since maturity requires consistency across all areas. Exception: a single category significantly ahead of others indicates a strength worth noting but does not elevate the overall stage.
+
+### State Secrets — Critical Overlay
+
+**State Secrets Hygiene** is evaluated as a **critical overlay** rather than a standard category. Any findings impact the overall assessment:
 
 | State Secrets Findings | Impact |
 |------------------------|--------|
-| 0 findings | No impact — full score applies |
-| 1-5 findings | Warning flag in report; Operations score capped at 70% |
-| 6+ findings | Critical flag; Operations score capped at 50%; overall maturity capped at "Adopting" |
+| 0 findings | No impact — maturity stage determined by categories above |
+| 1-5 findings | Warning flag in report; noted as a blocker to advancing beyond current stage |
+| 6+ findings | Critical flag; overall maturity capped at **Adopt** regardless of other categories |
 
-This ensures that leaked secrets in state are treated as a blocking issue regardless of how well other categories score.
-
-### Score Interpretation
-
-| Score | Maturity Level | Stage |
-|-------|----------------|-------|
-| 0-25 | Early | Pre-Adopt |
-| 26-45 | Adopting | Adopt |
-| 46-60 | Adopted | Adopt Complete |
-| 61-75 | Standardizing | Standardize |
-| 76-85 | Standardized | Standardize Complete |
-| 86-95 | Scaling | Scale |
-| 96-100 | Mature | Scale Complete |
+This ensures that leaked secrets in state are treated as a blocking concern regardless of how well other categories perform.
 
 ## Policy Gap Handling
 
@@ -825,15 +831,17 @@ Use the Australian example above as a template. Replace with local equivalents:
    "Read assessment/data.json which contains {specific structure}"
    ```
 
-2. **Explicit Scoring Rubric:**
+2. **Explicit Maturity Stage Criteria:**
    ```
-   "Score using these criteria:
-   - VCS Integration: 100% = 10 pts, 80%+ = 8 pts, <60% = 4 pts"
+   "Determine maturity stage using these indicators:
+   - Adopt: <50% VCS integration, mostly manual runs
+   - Standardize: 80%+ VCS integration, speculative plans enabled
+   - Scale: 100% VCS, CI/CD orchestration, advanced features adopted"
    ```
 
 3. **Exact Output Format:**
    ```
-   "Return JSON: {score: X, findings: [...], stage: '...'}"
+   "Return JSON: {maturity_stage: 'Adopt|Standardize|Scale', observations: [...], strengths: [...], opportunities: [...]}"
    ```
 
 4. **Tool Restrictions:**
@@ -849,17 +857,17 @@ Use the Australian example above as a template. Replace with local equivalents:
 **Example Effective Prompt:**
 ```
 Read assessment/data.json. Count workspaces with vcs_repo configured.
-Calculate percentage. Using these criteria:
-- 100% VCS integration = 10/10 points
-- 80-99% = 8/10 points
-- 60-79% = 6/10 points
-- <60% = 4/10 points
+Calculate percentage. Determine the maturity stage using these indicators:
+- Adopt: <50% VCS integration or mostly manual runs
+- Standardize: 80%+ VCS integration, speculative plans enabled, remote execution
+- Scale: 100% VCS, CI/CD orchestration established, Terraform Actions adopted
 
 Return JSON:
 {
-  "score": X,
-  "findings": ["...", "..."],
-  "stage": "Adopt|Standardize|Scale"
+  "maturity_stage": "Adopt|Standardize|Scale",
+  "observations": ["...", "..."],
+  "strengths": ["...", "..."],
+  "opportunities": ["...", "..."]
 }
 
 Save to assessment/gitops-eval.json. Use ONLY read_file - NO MCP servers.
@@ -899,14 +907,15 @@ Save to assessment/gitops-eval.json. Use ONLY read_file - NO MCP servers.
 
 **After Evaluations:**
 - ✅ 6 evaluation JSON files exist (gitops, pmr, policy, org, ops, state-secrets)
-- ✅ Each has a `score` field (numeric)
+- ✅ Each has a `maturity_stage` field (Adopt, Standardize, or Scale)
+- ✅ Each has `observations`, `strengths`, and `opportunities` arrays
 - ✅ Policy evaluation includes `gap_analysis` object
-- ✅ State secrets evaluation includes `findings` array and `remediation` recommendations
+- ✅ State secrets evaluation includes `observations` array and `remediation` recommendations
 
 **After Report Synthesis:**
 - ✅ `report.md` is >20 KB (comprehensive content)
 - ✅ `roadmap.md` is >30 KB (detailed implementation plan)
-- ✅ Overall score is 0-100 (not null)
+- ✅ Overall maturity stage is one of: Adopt, Standardize, Scale
 
 **After DOCX Conversion (optional):**
 - ✅ `report.docx` exists if `python-docx` was available
@@ -956,7 +965,7 @@ Save to assessment/gitops-eval.json. Use ONLY read_file - NO MCP servers.
 | Field | Reason |
 |-------|--------|
 | `terraform_version` | Version hygiene analysis |
-| `execution_mode` | GitOps maturity scoring |
+| `execution_mode` | GitOps maturity assessment |
 | `auto_apply` | Workflow pattern analysis |
 | `speculative_enabled` | PR workflow analysis |
 | `updated_at` | Activity/staleness detection |
@@ -992,7 +1001,7 @@ Save to assessment/gitops-eval.json. Use ONLY read_file - NO MCP servers.
 - Offer office hours for complex gaps (ISM, APRA policies)
 
 **For Executive Stakeholders:**
-- One-page executive summary (overall score + top 3 priorities)
+- One-page executive summary (overall maturity stage + top 3 priorities)
 - Visual maturity model (current → target state)
 - Risk framing (compliance gaps, audit findings)
 - Investment required (time, budget, resources)
@@ -1057,13 +1066,13 @@ This skill has been successfully validated against real TFC organizations:
 - Evaluation: 6 parallel sub-agents completed in ~10 minutes
 - Output: 39 KB `report.md`, 49 KB `roadmap.md`
 - Results:
-  - Overall Score: 60.5/100 (Adopting → Standardizing)
-  - Category Scores:
-    - PMR: 37/40 (92.5%) - Standardized
-    - GitOps: 42/50 (84%) - Standardizing
-    - Operations: 31/40 (77.5%) - Strong
-    - Organization: 22/40 (55%) - Adopting
-    - **Policy: 2/40 (5%) - Critical Gap Identified**
+  - Overall Maturity Stage: Adopt (transitioning toward Standardize)
+  - Category Observations:
+    - PMR: Standardize — Exceptional module library with 41 modules, 16.76 avg versions per module
+    - GitOps: Standardize — 100% VCS integration, API-driven architecture
+    - Operations: Standardize — 93% run success rate, regular automated cadence
+    - Organization: Adopt — Single team with 327 users, variable sets unused
+    - **Policy: Adopt — Zero policy sets deployed, critical governance gap**
   - Gap Analysis: Identified 6 available registry policies + 13 custom policy requirements
   - Roadmap: 6-month implementation plan with prioritized recommendations
 
@@ -1073,47 +1082,47 @@ This skill has been successfully validated against real TFC organizations:
 - Zero policy sets deployed (major opportunity for governance)
 - Regional compliance requirements (ISM, APRA CPS 234) flagged for custom development
 
-This real-world validation proves the skill can handle production TFC organizations and deliver actionable, business-aligned recommendations for enterprise customers across all regions and industries.
+This real-world validation proves the skill can handle production TFC organizations and deliver actionable, observation-based recommendations for enterprise customers across all regions and industries.
 
 ## Example Report Output
 
 ```markdown
-# TFC Maturity Assessment: Acme Corp
+# TFC/TFE Assessment: Acme Corp
 
 ## Executive Summary
 
-| Metric | Value |
-|--------|-------|
-| **Overall Score** | 58/100 |
-| **Maturity Level** | Standardizing |
-| **Current Stage** | Transitioning from Adopt to Standardize |
+| Dimension | Observation |
+|-----------|-------------|
+| **Overall Maturity Stage** | Adopt |
+| **Strongest Category** | GitOps & VCS — approaching Standardize |
+| **Primary Opportunity** | Policy-as-Code — no policies deployed |
 
-### Top Strengths
-1. ✅ 85% VCS integration
-2. ✅ Active team structure with 5 teams
-3. ✅ Consistent workspace naming
+### Key Strengths
+1. ✅ 85% VCS integration across workspaces
+2. ✅ Active team structure with 5 teams and defined RBAC
+3. ✅ Consistent workspace naming conventions
 
-### Top Improvement Areas
-1. ⚠️ No Sentinel policies configured
-2. ⚠️ Only 2 modules in PMR
-3. ⚠️ 35% stale workspaces (no runs in 90 days)
+### Key Opportunities
+1. ⚠️ No Sentinel policies configured — governance gap
+2. ⚠️ Only 2 modules in Private Module Registry
+3. ⚠️ 35% of workspaces are stale (no runs in 90 days)
 
-## Category Scores
+## Category Observations
 
-| Category | Score | Level |
-|----------|-------|-------|
-| GitOps & VCS | 72/100 | Standardizing |
-| Module Library | 28/100 | Adopting |
-| Policy-as-Code | 15/100 | Early |
-| Organization | 68/100 | Standardizing |
-| Operations | 62/100 | Adopted |
+| Category | Current Stage | Key Observation |
+|----------|--------------|-----------------|
+| GitOps & VCS | Standardize | Strong VCS integration; speculative plans enabled |
+| Module Library | Adopt | Limited module library; versioning not yet established |
+| Policy-as-Code | Adopt | No policies deployed; critical governance opportunity |
+| Organization | Standardize | Good team structure; variable sets need attachment |
+| Operations | Adopt | Mixed run health; version drift detected |
 
-## State Secrets Findings
+## State Secrets Observations
 
-| Severity | Count |
-|----------|-------|
-| 🔴 Secrets in state | 3 |
-| 🟡 Sensitive attribute names | 7 |
+| Dimension | Observation |
+|-----------|-------------|
+| 🔴 Secrets in state | 3 findings across 2 workspaces |
+| 🟡 Sensitive attribute names | 7 flagged attributes |
 | Workspaces affected | 2 / 12 |
 
 ### Critical: Secrets Found in Terraform State
@@ -1227,18 +1236,19 @@ Based on your organization's patterns and the current HCP Terraform platform cap
 The `report-synthesizer-agent` MUST produce a report following this section structure. Sections marked **(conditional)** are only included when the data supports them.
 
 ```
-# TFC Maturity Assessment: {Organization Name}
+# TFC/TFE Assessment: {Organization Name}
 
 ## Executive Summary
-- Overall Score table (score, maturity level, stage)
-- Top Strengths (3 items)
-- Top Improvement Areas (3 items)
+- Overall Maturity Stage table (stage, strongest category, primary opportunity)
+- Key Strengths (3 items)
+- Key Opportunities (3 items)
 
-## Category Scores
-- Table: Category | Score | Level
+## Category Observations
+- Table: Category | Current Stage | Key Observation
+  (NO scores, NO percentages — observations only)
 
-## State Secrets Findings
-- Summary table (severity counts, workspaces affected)
+## State Secrets Observations
+- Summary table (finding dimensions, workspaces affected)
 - Critical findings table (workspace, finding, attribute path)
 - Remediation steps with Terraform version-specific advice
 - Link to HashiCorp sensitive data docs
