@@ -2,14 +2,14 @@
 
 **Organization**: example-org-production  
 **Assessment Date**: February 8, 2026  
-**Overall Maturity Score**: 57/100 (Adopted)  
+**Overall Maturity Stage**: Adopt  
 **Assessment Framework**: HashiCorp Validated Designs (HVD)
 
 ---
 
 ## Executive Summary
 
-This Terraform Cloud organization demonstrates **Adopted-level maturity** with a composite score of 57/100. The organization has successfully implemented foundational infrastructure-as-code practices with strong module management and policy-as-code readiness. However, critical governance gaps exist that must be addressed to advance toward the Optimized maturity level.
+This Terraform Cloud organization demonstrates **Adopt-level maturity** across Terraform Cloud practices. The organization has successfully implemented foundational infrastructure-as-code practices with strong module management and policy-as-code readiness. However, critical governance gaps exist that must be addressed to advance toward the Standardize maturity stage.
 
 ### Key Findings
 
@@ -21,7 +21,7 @@ This Terraform Cloud organization demonstrates **Adopted-level maturity** with a
 
 **Critical Gaps:**
 - **Zero policy sets implemented** - No policy-as-code governance in place
-- **Limited policy enforcement** - Full policy implementation gap (0/25 points)
+- **Limited policy enforcement** - Full policy implementation gap
 - **Organizational governance issues** - Single team managing 327 users with 5 unattached variable sets
 - **Workspace staleness** - One workspace with 50% error rate and no activity since August 2025
 
@@ -31,22 +31,22 @@ The organization is at an inflection point. Investment in policy governance and 
 
 ---
 
-## Category Scores Summary
+## Category Observations
 
-| Category | Score | Percentage | Status |
-|----------|-------|-----------|--------|
-| **GitOps** | 21/25 | 84% | Strong |
-| **PMR (Private Module Registry)** | 19/20 | 95% | Excellent |
-| **Policy** | 0/25 | 0% | **Critical Gap** |
-| **Organizational Governance** | 6/15 | 40% | Needs Improvement |
-| **Operational Excellence** | 11/15 | 73% | Good |
-| **Overall** | **57/100** | **57%** | **Adopted** |
+| Category | Maturity Stage | Key Observation |
+|----------|---------------|-----------------|
+| **GitOps & VCS** | Standardize | 100% VCS integration; low VCS-triggered run rate (5.9%) |
+| **Module Library (PMR)** | Scale | 41 modules, 10 providers, 16.6 avg versions — mature registry |
+| **Policy-as-Code** | Adopt | Zero policy sets — critical governance gap |
+| **Organization & Teams** | Adopt | Single team with 327 users, no RBAC structure |
+| **Operations & Health** | Standardize | 88% run success rate, 1 stale workspace needs attention |
+| **Overall** | **Adopt** | Overall stage determined by lowest category (Policy-as-Code, Organization) |
 
 ---
 
 ## Detailed Category Analysis
 
-### 1. GitOps (21/25 - 84%)
+### 1. GitOps & VCS — Standardize
 
 **Overview**: The organization demonstrates excellent version control integration with consistent VCS-driven workflows.
 
@@ -73,7 +73,7 @@ The organization is at an inflection point. Investment in policy governance and 
 
 ---
 
-### 2. Private Module Registry (PMR) - 19/20 (95%)
+### 2. Private Module Registry (PMR) — Scale
 
 **Overview**: Exceptional module management maturity with comprehensive registry adoption.
 
@@ -106,9 +106,9 @@ The organization is at an inflection point. Investment in policy governance and 
 
 ---
 
-### 3. Policy (0/25 - 0%) ⚠️ CRITICAL GAP
+### 3. Policy-as-Code — Adopt ⚠️ CRITICAL GAP
 
-**Overview**: This is the organization's most significant governance gap. Zero policy sets are currently implemented despite policy-as-code being fundamental to HVD Optimized maturity.
+**Overview**: This is the organization's most significant governance gap. Zero policy sets are currently implemented despite policy-as-code being fundamental to HVD Scale maturity stage.
 
 **Current State:**
 - **Policy Sets Implemented**: 0
@@ -171,14 +171,14 @@ The organization is at an inflection point. Investment in policy governance and 
 - Establish monthly policy review cadence
 
 **Expected Impact:**
-- +15-20 points maturity score increase
+- Advancement from Adopt toward Standardize stage
 - Reduced non-compliant deployments by 80%+
 - Cost savings through automated enforcement (typically 15-25%)
 - Improved audit and compliance posture
 
 ---
 
-### 4. Organizational Governance (6/15 - 40%)
+### 4. Organization & Teams — Adopt
 
 **Overview**: Organizational structure and access management require significant enhancement to support enterprise-scale operations.
 
@@ -282,7 +282,7 @@ Operations
 
 ---
 
-### 5. Operational Excellence (11/15 - 73%)
+### 5. Operations & Health — Standardize
 
 **Overview**: The organization maintains good operational health with strong success rates, though workspace management attention is needed.
 
@@ -374,7 +374,7 @@ Operations
 - [ ] Document workspace lifecycle management policy
 
 **Phase 3: Medium-term (Next 30 days)**
-- [ ] Implement health score dashboards
+- [ ] Implement health dashboards
 - [ ] Set up automated remediation for detected issues
 - [ ] Create runbooks for common operational failures
 - [ ] Establish SLA targets (e.g., 95% success rate, <24hr MTTR)
@@ -396,7 +396,7 @@ The absence of policy sets represents a **critical governance vulnerability**:
 | Aspect | Current State | Risk Level | HVD Requirement |
 |--------|--------------|-----------|-----------------|
 | **Security Enforcement** | None | CRITICAL | Mandatory |
-| **Cost Controls** | None | HIGH | Required for Optimized |
+| **Cost Controls** | None | HIGH | Required for Scale |
 | **Compliance Automation** | None | HIGH | Required for regulated workloads |
 | **Operational Standards** | None | MEDIUM | Recommended |
 | **Audit Trail** | Limited | HIGH | Required for SOC2/PCI |
@@ -427,7 +427,7 @@ The absence of policy sets represents a **critical governance vulnerability**:
 
 ### Priority 1: Critical - Implement Policy-as-Code (Weeks 1-6)
 
-**Objective**: Close the 25-point policy gap that currently prevents advancement toward higher maturity.
+**Objective**: Close the critical policy gap that currently prevents advancement toward Standardize maturity.
 
 **Actions:**
 1. **Establish Sentinel Policy Framework**
@@ -450,7 +450,7 @@ The absence of policy sets represents a **critical governance vulnerability**:
    - Create dashboard for tracking exceptions
 
 4. **Expected Impact**:
-   - +15-20 points maturity score increase
+   - Significant progression toward Standardize stage
    - 80%+ reduction in non-compliant deployments
    - Full audit trail of infrastructure decisions
    - Enables compliance certifications (SOC2, PCI-DSS, etc.)
@@ -486,7 +486,7 @@ The absence of policy sets represents a **critical governance vulnerability**:
    - Set up SSO integration for user management
 
 4. **Expected Impact**:
-   - +8-10 points maturity score increase
+   - Strengthens organizational foundation for Standardize stage
    - Proper separation of duties and access control
    - Improved accountability and auditing
    - Scalable foundation for organization growth
@@ -516,13 +516,13 @@ The absence of policy sets represents a **critical governance vulnerability**:
    - Create automated version checking and alerts
 
 3. **Operational Monitoring**
-   - Set up workspace health score dashboards
+   - Set up workspace health dashboards
    - Implement run success rate monitoring and alerting
    - Create stale workspace detection (>90 days no activity)
    - Establish SLA targets (95% success rate)
 
 4. **Expected Impact**:
-   - +2-3 points maturity score increase
+   - Strengthens operational practices toward Standardize stage
    - 95%+ run success rate
    - Proactive identification of failing infrastructure
    - Reduced operational overhead
@@ -559,7 +559,7 @@ The absence of policy sets represents a **critical governance vulnerability**:
    - Set up knowledge base for troubleshooting
 
 4. **Expected Impact**:
-   - +2-3 points maturity score increase
+   - Strengthens GitOps practices within Standardize stage
    - Improved audit trail (all changes tracked in VCS)
    - Faster deployment cycles
    - Better collaboration and code review practices
@@ -605,7 +605,7 @@ The absence of policy sets represents a **critical governance vulnerability**:
 
 ### Priority 6: Low - PMR Maturity Enhancement (Weeks 5-6)
 
-**Objective**: Increase PMR score from 95% to 100% through systematic improvements.
+**Objective**: Advance PMR practices from Scale fundamentals to Scale excellence through systematic improvements.
 
 **Actions:**
 1. **Test Coverage**
@@ -627,7 +627,7 @@ The absence of policy sets represents a **critical governance vulnerability**:
    - Document module dependency analysis
 
 4. **Expected Impact**:
-   - +1 point maturity score increase
+   - Cements PMR at Scale-level maturity
    - Higher quality module ecosystem
    - Reduced module-related incidents
    - Better visibility into module usage patterns
@@ -639,14 +639,14 @@ The absence of policy sets represents a **critical governance vulnerability**:
 **Important Note**: This assessment evaluates a HashiCorp demonstration platform designed to showcase TFC capabilities and governance patterns. The recommendations above are framed as **governance showcase opportunities** that prospective customers can use to:
 
 - **Learn governance patterns**: Demonstrate how to implement policy-as-code, organizational structures, and access controls
-- **Evaluate HVD maturity**: Show progression through HVD maturity levels
+- **Evaluate HVD maturity**: Show progression through HVD maturity stages (Adopt → Standardize → Scale)
 - **Plan implementations**: Use recommendations as template for customer infrastructure
 - **Showcase remediation**: Highlight tools and processes for improving maturity
 
 ### Demo Value Propositions
 
 **For Sales Demos:**
-- Show current state of "typical" enterprise adoption (57/100)
+- Show current state of "typical" enterprise adoption at **Adopt** stage
 - Demonstrate policy-as-code implementation before/after
 - Highlight organizational structure benefits
 - Walk through improvement roadmap with customer
@@ -668,10 +668,10 @@ The absence of policy sets represents a **critical governance vulnerability**:
 ## Summary & Next Steps
 
 ### Current Assessment
-- **Overall Score**: 57/100 (Adopted)
-- **Primary Strengths**: Module management (95%), VCS integration (84%)
-- **Critical Gap**: Zero policy implementation (0/25)
-- **Major Challenges**: Organizational structure (40%), workspace operations (73%)
+- **Overall Maturity Stage**: Adopt
+- **Primary Strengths**: Module management (Scale), VCS integration (Standardize)
+- **Critical Gap**: Zero policy implementation (Policy-as-Code at Adopt)
+- **Major Challenges**: Organization & Teams (Adopt), Operations & Health (Standardize — stale workspace)
 
 ### Immediate Actions (This Week)
 1. [ ] Audit and resolve packer-out-of-date status
@@ -691,34 +691,38 @@ The absence of policy sets represents a **critical governance vulnerability**:
 2. Achieve 40%+ VCS-triggered run rate
 3. Complete organizational SSO integration
 4. Establish SLA-based operational monitoring
-5. Target maturity score: 75-80/100 (Optimized trajectory)
+5. Target maturity stage: Standardize (across all categories)
 
 ### Success Criteria
-- [ ] Policy implementation brings score to 75+/100 target
+- [ ] Policy implementation enables organization-wide advancement to Standardize stage
 - [ ] Zero policy violations on critical infrastructure
 - [ ] All workspaces healthy with 95%+ success rate
 - [ ] Team structure enables secure, scalable operations
-- [ ] Organization progresses toward Optimized maturity level
+- [ ] Organization progresses toward Standardize maturity stage across all categories
 
 ---
 
 ## Appendix: Assessment Methodology
 
-This assessment follows HashiCorp Validated Designs (HVD) maturity framework across six key dimensions:
+This assessment follows HashiCorp Validated Designs (HVD) maturity framework, evaluating practices across five key dimensions:
 
-1. **GitOps** (0-25 pts): Version control integration, automated deployments, audit trails
-2. **PMR** (0-20 pts): Module management, reusability, versioning
-3. **Policy** (0-25 pts): Policy-as-code, governance, compliance automation
-4. **Organization** (0-15 pts): Team structure, access controls, user management
-5. **Ops** (0-15 pts): Reliability, monitoring, incident response
-6. **Bonus** (0-0 pts): Special achievements and certifications
+1. **GitOps & VCS**: Version control integration, automated deployments, audit trails
+2. **Module Library (PMR)**: Module management, reusability, versioning, registry adoption
+3. **Policy-as-Code**: Policy enforcement, governance, compliance automation
+4. **Organization & Teams**: Team structure, access controls, user management
+5. **Operations & Health**: Reliability, monitoring, workspace lifecycle, incident response
 
-**Maturity Levels:**
-- **0-24**: Nascent (minimal practices)
-- **25-49**: Emerging (foundational practices)
-- **50-74**: Adopted (established practices)
-- **75-89**: Optimized (comprehensive practices)
-- **90-100**: Exemplary (industry leading)
+**Maturity Stages** (aligned to HVD Operating Guides):
+
+| Stage | Description |
+|-------|-------------|
+| **Adopt** | Onboarding to TFC/TFE — foundational practices being established |
+| **Standardize** | Consistent, repeatable practices across teams and workspaces |
+| **Scale** | Operating at scale with self-service, automation, and comprehensive governance |
+
+**Overall maturity stage** is determined by the **lowest category stage** — the organization is only as mature as its least-developed practice area. This ensures all dimensions receive attention before advancing.
+
+**State Secrets Assessment** is an overlay: findings don't define a stage but may constrain advancement (e.g., critical secret exposure caps the organization at Adopt regardless of other categories).
 
 ---
 

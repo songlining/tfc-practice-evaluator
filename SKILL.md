@@ -210,7 +210,7 @@ A **Team token** with organization-level read access is recommended. The token m
 
 ⚠️ **Tool Restrictions**:
 - USE: Provided scripts (`collect_tfc_data.py` or `collect_tfc_data.sh`)
-- DO NOT USE: Any MCP servers (mcp_* tools) - they introduce unpredictable context pollution
+- DO NOT USE: Any MCP servers (mcp_* tools)
 - Reason: Production-validated scripts handle all edge cases (pagination, rate limits, errors)
 
 ## Quick Start
@@ -427,6 +427,7 @@ The `platform-research-agent` MUST use web search tools (e.g., `websearch`, `web
    - **Terraform Actions**: Day 2 operations (Ansible, Lambda). Search: `"Terraform actions" GA "Day 2" site:hashicorp.com`
    - **Terraform MCP Server**: AI-assisted Terraform workflows. Search: `"Terraform MCP server" beta OR GA site:hashicorp.com`
    - **Any new features announced** at recent HashiConf or blog posts
+   - **Agent Skills**: check if any new agent skills related to hashicorp products have been released.
 
 3. **Module Lifecycle Features** — Search `developer.hashicorp.com/terraform/cloud-docs/registry` for:
    - Module deprecation and revocation availability (which HCP Terraform editions?)
@@ -1369,6 +1370,7 @@ TFC_TIMEOUT=300 /tfc-practice-evaluator
 - [TFE API Documentation](https://developer.hashicorp.com/terraform/enterprise/api-docs)
 - [Terraform Registry Policies](https://registry.terraform.io/browse/policies)
 - [Managing Sensitive Data in Terraform](https://developer.hashicorp.com/terraform/language/manage-sensitive-data)
+- [Agent Skills](https://github.com/hashicorp/agent-skills)
 
 > **Note**: The `platform-research-agent` fetches current URLs at runtime via web search. The links above are fallback references that were accurate as of the last skill update.
 

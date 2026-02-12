@@ -1,14 +1,9 @@
 {
   "category": "Organization & Teams",
-  "score": 6,
-  "max_score": 15,
-  "percentage": 40,
-  "stage": "Adopt",
+  "maturity_stage": "Adopt",
   "evaluation_date": "2026-02-08",
   "metrics": {
     "team_structure": {
-      "score": 1,
-      "max": 5,
       "detail": "Only 1 team with 327 users. No RBAC separation (no Admin/Developer/Viewer roles). Team visibility is 'secret', organization_access has no manage permissions. Single flat team structure with hundreds of users is a scaling bottleneck.",
       "teams": [
         {
@@ -31,8 +26,6 @@
       ]
     },
     "project_organization": {
-      "score": 3,
-      "max": 5,
       "detail": "2 projects exist, providing basic workspace grouping. Workspaces 1-3 share one project (prjid-b6a97d6caaec), workspace 4 in another (prjid-ffdc8c65d379). Structure exists but minimal.",
       "projects": [
         {"project": "prjid-b6a97d6caaec", "workspaces": ["ws-aa1bbf21273d", "ws-e2ab44612647", "ws-8c168b8f9329"]},
@@ -40,8 +33,6 @@
       ]
     },
     "variable_sets": {
-      "score": 1,
-      "max": 3,
       "detail": "5 variable sets exist (all global) but NONE are attached to any workspaces (workspace_count=0 for all 5). Variable sets were created but never operationalized.",
       "variable_sets": [
         {"name": "vs-fb6a4f78cd21", "global": true, "workspace_count": 0, "priority": false},
@@ -52,18 +43,22 @@
       ]
     },
     "workspace_naming": {
-      "score": 1,
-      "max": 2,
-      "detail": "Workspace names are obfuscated (ws-* pattern). Cannot assess naming convention quality. Consistent prefix pattern suggests some standardization. 1 point for evidence of consistent structure."
+      "detail": "Workspace names are obfuscated (ws-* pattern). Cannot assess naming convention quality. Consistent prefix pattern suggests some standardization."
     }
   },
-  "findings": [
-    "CRITICAL GAP: Single team with 327 users - no RBAC differentiation (Admin/Developer/Viewer)",
-    "GAP: 5 variable sets created but 0 attached to workspaces - configuration management not operationalized",
-    "MODERATE: Only 2 projects for 4 workspaces - minimal organizational hierarchy",
-    "OBSERVATION: Team has no organization-level manage permissions (all false) - may indicate Owners team handles administration",
-    "QUICK WIN: Attach existing variable sets to relevant workspaces (1-2 hours effort)",
-    "QUICK WIN: Create at least 3 teams: Platform Admin, Developer, Viewer (4-8 hours effort)",
-    "OPPORTUNITY: Project structure exists - expand to support environment-based or team-based workspace grouping"
+  "observations": [
+    "Single team with 327 users — no RBAC differentiation (Admin/Developer/Viewer)",
+    "5 variable sets created but 0 attached to workspaces — configuration management not operationalized",
+    "Only 2 projects for 4 workspaces — minimal organizational hierarchy",
+    "Team has no organization-level manage permissions (all false) — may indicate Owners team handles administration"
+  ],
+  "strengths": [
+    "Project structure exists — provides foundation for expanding workspace organization",
+    "Variable sets have been created — indicates awareness of centralized configuration management"
+  ],
+  "opportunities": [
+    "Attach existing variable sets to relevant workspaces (1-2 hours effort)",
+    "Create at least 3 teams: Platform Admin, Developer, Viewer (4-8 hours effort)",
+    "Expand project structure to support environment-based or team-based workspace grouping"
   ]
 }

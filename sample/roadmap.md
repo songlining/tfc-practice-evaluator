@@ -1,31 +1,31 @@
-# 6-Month Implementation Roadmap: TFC Maturity Advancement (57 → 78)
+# 6-Month Implementation Roadmap: TFC Maturity Advancement — Adopt to Standardize
 
 ## Executive Summary
 
-This roadmap outlines a structured 6-month plan to advance the organization's Terraform Cloud (TFC) maturity score from **57/100** to **78/100**. The improvement focuses on implementing GitOps workflows, policy enforcement, governance controls, and operational scaling across the organization.
+This roadmap outlines a structured 6-month plan to advance the organization's Terraform Cloud (TFC) maturity from **Adopt** stage to **Standardize** stage across all practice areas. The improvement focuses on implementing GitOps workflows, policy enforcement, governance controls, and operational scaling across the organization.
 
-### Current State Assessment (Score: 57/100)
-- **GitOps Workflows (21/24):** Basic VCS integration exists; missing advanced branching strategies and PR automation
-- **Policy & Module Reuse (19/20):** Limited policy enforcement; inconsistent module usage patterns
-- **Policy Engine (0/18):** No Sentinel policy enforcement; no cost controls or tagging governance
-- **Organization & Governance (6/11):** Minimal team structure; limited RBAC implementation
-- **Operational Excellence (11/13):** Gaps in state management, runbooks, and lifecycle governance
+### Current State Assessment (Stage: Adopt)
+- **GitOps Workflows:** Basic VCS integration exists; missing advanced branching strategies and PR automation
+- **Policy & Module Reuse:** Strong module registry; inconsistent module usage patterns
+- **Policy Engine:** No Sentinel policy enforcement; no cost controls or tagging governance
+- **Organization & Governance:** Minimal team structure; limited RBAC implementation
+- **Operational Excellence:** Gaps in state management, runbooks, and lifecycle governance
 
-### Target State Assessment (Score: 78/100)
-- **GitOps Workflows (24/24):** Full implementation with sophisticated branching and PR automation
-- **Policy & Module Reuse (20/20):** Standardized, governed module consumption across all teams
-- **Policy Engine (18/18):** Comprehensive Sentinel policies for cost, compliance, and tagging
-- **Organization & Governance (11/11):** Mature team structure with delegated permissions and clear ownership
-- **Operational Excellence (13/13):** Robust lifecycle management, disaster recovery, and team enablement
+### Target State Assessment (Stage: Standardize)
+- **GitOps Workflows:** Full implementation with sophisticated branching and PR automation
+- **Policy & Module Reuse:** Standardized, governed module consumption across all teams
+- **Policy Engine:** Comprehensive Sentinel policies for cost, compliance, and tagging
+- **Organization & Governance:** Mature team structure with delegated permissions and clear ownership
+- **Operational Excellence:** Robust lifecycle management, disaster recovery, and team enablement
 
-### Score Progression Timeline
-| Milestone | Timeline | Score | Gain | Focus Area |
-|-----------|----------|-------|------|-----------|
-| Current State | Week 0 | 57 | — | Baseline |
-| Phase 1 Complete | Week 2 | 62 | +5 | Quick Policy Wins |
-| Phase 2 Complete | Week 6 | 70 | +8 | Foundation & Workflows |
-| Phase 3 Complete | Month 3 | 75 | +5 | Governance & Policies |
-| Phase 4 Complete | Month 6 | 78 | +3 | Scaling & Automation |
+### Stage Progression Timeline
+| Milestone | Timeline | Stage | Focus Area |
+|-----------|----------|-------|-----------|
+| Current State | Week 0 | Adopt | Baseline |
+| Phase 1 Complete | Week 2 | Adopt (strengthened) | Quick Policy Wins |
+| Phase 2 Complete | Week 6 | Adopt → Standardize (emerging) | Foundation & Workflows |
+| Phase 3 Complete | Month 3 | Standardize (emerging) | Governance & Policies |
+| Phase 4 Complete | Month 6 | Standardize | Scaling & Automation |
 
 ---
 
@@ -211,10 +211,10 @@ List workspaces with last run >90 days ago
 - No orphaned state remaining
 - Documentation complete for future reference
 
-### Phase 1 Score Impact: +5 (57 → 62)
-- **Policy Engine:** 0 → 6 (basic policies deployed)
-- **Org & Governance:** 6 → 7 (workspace cleanup)
-- **Operational Excellence:** 11 → 12 (variable standardization)
+### Phase 1 Maturity Impact
+- **Policy-as-Code:** Moves from zero governance to foundational policy framework — first step within Adopt stage
+- **Organization & Teams:** Workspace cleanup reduces operational debt
+- **Operations & Health:** Variable set standardization improves consistency
 
 ### Phase 1 Effort Summary
 - **Total Effort:** 17 hours
@@ -427,12 +427,12 @@ Transition policies from soft to hard mandatory enforcement:
 - Zero unapproved policy violations
 - Audit trail complete for compliance
 
-### Phase 2 Score Impact: +8 (62 → 70)
-- **GitOps Workflows:** 21 → 24 (+3: VCS workflow, branch protection, auto-apply)
-- **Policy & Module Reuse:** 19 → 20 (+1: module standardization progress)
-- **Policy Engine:** 6 → 12 (+6: hard mandatory policies, exception handling)
-- **Org & Governance:** 7 → 9 (+2: team RBAC structure)
-- **Operational Excellence:** 12 → 12 (no change this phase)
+### Phase 2 Maturity Impact
+- **GitOps & VCS:** VCS workflows, branch protection, and auto-apply strengthen Standardize-level practices
+- **Module Library:** Module standardization progress continues
+- **Policy-as-Code:** Hard mandatory policies and exception handling advance governance maturity
+- **Organization & Teams:** Team RBAC structure establishes clear ownership boundaries
+- **Operations & Health:** No change this phase — focus on governance foundation
 
 ### Phase 2 Effort Summary
 - **Total Effort:** 36 hours
@@ -840,10 +840,10 @@ check_module_source = func(source) {
 - Module usage tracking dashboard operational
 - <5% unapproved module sources in plans
 
-### Phase 3 Score Impact: +5 (70 → 75)
-- **Policy Engine:** 12 → 18 (+6: tagging policy, cost controls, module governance)
-- **Org & Governance:** 9 → 10 (+1: module ownership structure)
-- **Operational Excellence:** 12 → 12 (no change this phase)
+### Phase 3 Maturity Impact
+- **Policy-as-Code:** Tagging governance, cost controls, and module source policies establish Standardize-level governance
+- **Organization & Teams:** Module ownership structure strengthens accountability
+- **Operations & Health:** No change this phase — focus on policy scaling
 
 ### Phase 3 Effort Summary
 - **Total Effort:** 30 hours
@@ -1089,11 +1089,11 @@ Core Policies (Mandatory across all organizations):
 
 ```
 Automated Compliance Dashboard:
-├── Policy Compliance Score by Team
-│   ├── app-team-a: 96% (12/13 policies passing)
-│   ├── app-team-b: 94% (12/13 policies passing)
-│   ├── platform-engineers: 99% (13/13 policies passing)
-│   └── ops-team: 92% (12/13 policies passing)
+├── Policy Compliance by Team
+│   ├── app-team-a: 96% (12 of 13 policies passing)
+│   ├── app-team-b: 94% (12 of 13 policies passing)
+│   ├── platform-engineers: 99% (13 of 13 policies passing)
+│   └── ops-team: 92% (12 of 13 policies passing)
 │
 ├── Failing Resources:
 │   ├── Total non-compliant resources: 8
@@ -1158,13 +1158,13 @@ Waiver Audit Trail:
 **Deliverables:**
 - 12-15 hard-mandatory policies deployed
 - Automated compliance dashboard (Grafana/Tableau)
-- Compliance scoring algorithm documented
+- Compliance measurement algorithm documented
 - Waiver request system operational
 - Weekly compliance reports to leadership
 - Remediation tracking spreadsheet
 
 **Success Criteria:**
-- Overall compliance score ≥ 95%
+- Overall compliance rate ≥ 95%
 - No policy violations without documented waiver
 - All teams notified of non-compliance within 24 hours
 - Remediation timeline: Critical (24h), High (1 week), Medium (2 weeks)
@@ -1532,7 +1532,7 @@ Monthly Training Cohorts:
 Developer Experience:
 ├─ Time to create workspace: <10 minutes (target: was 2-4 hours manual)
 ├─ Self-service adoption rate: >80% (vs. requesting platform team)
-├─ Developer satisfaction: >4/5 NPS score
+├─ Developer satisfaction: >4/5 NPS rating
 └─ Support ticket reduction: 40% fewer "how do I create a workspace" tickets
 
 Operational Efficiency:
@@ -1562,12 +1562,12 @@ Business Impact:
 - >95% of teams rated training materials as helpful
 - <2 hours RTO for workspace recovery from backup
 
-### Phase 4 Score Impact: +3 (75 → 78)
-- **GitOps Workflows:** 24 → 24 (no additional gains)
-- **Policy & Module Reuse:** 20 → 20 (no additional gains)
-- **Policy Engine:** 18 → 18 (no additional gains - comprehensive coverage)
-- **Org & Governance:** 10 → 11 (+1: expanded teams, project structure)
-- **Operational Excellence:** 12 → 13 (+2: lifecycle management, disaster recovery, self-service)
+### Phase 4 Maturity Impact
+- **GitOps & VCS:** Maintains Standardize-level practices
+- **Module Library:** Maintains Scale-level practices
+- **Policy-as-Code:** Comprehensive governance maintained
+- **Organization & Teams:** Expanded teams and project structure solidify Standardize practices
+- **Operations & Health:** Lifecycle management, disaster recovery, and self-service advance toward Standardize
 
 ### Phase 4 Effort Summary
 - **Total Effort:** 55 hours
@@ -1588,12 +1588,12 @@ MONTH 1: Quick Wins & Foundation
 │   ├─ Deploy Sentinel policies
 │   ├─ Attach variable sets
 │   └─ Remediate stale workspaces
-│   └─ Score: 57 → 62 (+5)
+│   └─ Stage: Adopt (strengthened)
 │
 ├─ Week 3-4: Phase 2 (Foundation) - Part 1
 │   ├─ Implement team RBAC
 │   └─ Begin GitOps workflow setup
-│   └─ Current Progress: 62 → 65
+│   └─ Progress: Building toward Standardize
 │
 └─ Deliverables: 3 policies, 2 varsets, 9 stale workspaces resolved
 
@@ -1601,13 +1601,13 @@ MONTH 2: Governance & Advanced Workflows
 ├─ Week 5-6: Phase 2 (Foundation) - Part 2
 │   ├─ Complete GitOps workflows
 │   ├─ Promote policies to hard mandatory
-│   └─ Score: 62 → 70 (+8)
+│   └─ Stage: Adopt → Standardize (emerging)
 │
 ├─ Week 7-8: Phase 3 (Governance) - Part 1
 │   ├─ Deploy tagging policy
 │   ├─ Establish cost controls
 │   └─ Begin module registry setup
-│   └─ Current Progress: 70 → 72
+│   └─ Progress: Entering Standardize territory
 │
 └─ Deliverables: VCS workflows, branch protection, 4 teams, 6 policies total
 
@@ -1615,12 +1615,12 @@ MONTH 3: Compliance & Policy Scaling
 ├─ Week 9-10: Phase 3 (Governance) - Part 2
 │   ├─ Complete module ingestion standards
 │   ├─ Establish module promotion workflow
-│   └─ Score: 70 → 75 (+5)
+│   └─ Stage: Standardize (emerging)
 │
 ├─ Week 11-13: Phase 3 (Governance) - Part 3
 │   ├─ Validate all governance structures
 │   ├─ Begin Phase 4 planning
-│   └─ Current Progress: 75 → 75 (stabilization week)
+│   └─ Progress: Standardize (stabilization)
 │
 └─ Deliverables: 5 private modules, tagging policy, cost controls, module registry
 
@@ -1629,12 +1629,12 @@ MONTH 4-5: Scaling & Expansion
 │   ├─ Multi-project expansion
 │   ├─ 3-4 new teams onboarded
 │   ├─ Hard-mandatory policy enforcement
-│   └─ Current Progress: 75 → 76.5
+│   └─ Progress: Standardize (strengthening)
 │
 ├─ Week 19-20: Phase 4 (Scaling) - Part 2
 │   ├─ Workspace lifecycle management
 │   ├─ State governance & disaster recovery
-│   └─ Current Progress: 76.5 → 77
+│   └─ Progress: Standardize (maturing)
 │
 └─ Deliverables: 30-40 total workspaces, 8-10 teams, disaster recovery, state backups
 
@@ -1642,13 +1642,13 @@ MONTH 6: Self-Service & Optimization
 ├─ Week 21-26: Phase 4 (Scaling) - Part 3
 │   ├─ Self-service portal development
 │   ├─ Developer enablement program
-│   ├─ Score: 75 → 78 (+3)
-│   └─ Final Assessment: Target reached ✓
+│   ├─ Stage: Standardize (achieved)
+│   └─ Final Assessment: Standardize target achieved
 │
 └─ Deliverables: Self-service portal, certification program, KPI dashboard
 
 Final State:
-├─ Score: 78/100 (target reached)
+├─ Stage: Standardize (target achieved)
 ├─ Workspaces: 30-40 (from 12-15)
 ├─ Teams: 8-10 (from 4)
 ├─ Policies: 12-15 hard-mandatory (from 0)
@@ -1716,7 +1716,7 @@ Core modules (VPC, RDS, IAM) are complex and may not complete on schedule, delay
 5. **Reusable Components:** Publish early module versions for team feedback
 
 **Contingency:**
-- Phase 3 module governance enforcement can be delayed 2-4 weeks without impact to overall score
+- Phase 3 module governance enforcement can be delayed 2-4 weeks without impact to overall maturity progression
 - Alternative: Use public modules (hashicorp/aws-ia) instead of custom modules for Phase 2
 - Extend team capacity with external resources
 
@@ -1848,7 +1848,7 @@ Total Project Budget: $450K-500K (including external support, tools, training)
 **Success Metrics:**
 | Metric | Current | Target | Timeline |
 |--------|---------|--------|----------|
-| TFC Maturity Score | 57 | 78 | Month 6 |
+| TFC Maturity Stage | Adopt | Standardize | Month 6 |
 | Team RBAC Coverage | 25% | 100% | Month 2 |
 | Policy Compliance | 0% | >95% | Month 3 |
 | Module Registry Coverage | 0 modules | 5+ modules | Month 3 |
@@ -1861,7 +1861,7 @@ Total Project Budget: $450K-500K (including external support, tools, training)
 
 ## Conclusion
 
-This 6-month roadmap provides a structured, phased approach to advancing Terraform Cloud maturity from 57 to 78 (out of 100). The plan balances quick wins with foundational improvements, ensuring sustained momentum and team buy-in.
+This 6-month roadmap provides a structured, phased approach to advancing Terraform Cloud maturity from **Adopt** to **Standardize** stage. The plan balances quick wins with foundational improvements, ensuring sustained momentum and team buy-in.
 
 **Key Success Factors:**
 1. Executive sponsorship and commitment

@@ -1,14 +1,9 @@
 {
   "category": "Operations & Health",
-  "score": 11,
-  "max_score": 15,
-  "percentage": 73,
-  "stage": "Standardize",
+  "maturity_stage": "Standardize",
   "evaluation_date": "2026-02-08",
   "metrics": {
     "run_success_rate": {
-      "score": 4,
-      "max": 5,
       "detail": "60/68 runs non-error (88.2%). Breakdown: 55 applied, 5 planned_and_finished, 2 canceled, 4 errored, 1 discarded, 1 planning. All 4 errored runs are in ws-cdfaef0fb16a.",
       "breakdown": {
         "applied": 55,
@@ -27,13 +22,9 @@
       }
     },
     "run_frequency": {
-      "score": 3,
-      "max": 4,
-      "detail": "Workspaces 1-3: Weekly automated runs via tfe-api (last active 2026-02-02). Workspace 4: Last run 2025-08-29 - stale for >5 months."
+      "detail": "Workspaces 1-3: Weekly automated runs via tfe-api (last active 2026-02-02). Workspace 4: Last run 2025-08-29 — stale for >5 months."
     },
     "terraform_version_hygiene": {
-      "score": 3,
-      "max": 3,
       "detail": "Two modern Terraform versions: 1.9.6 (workspaces 1-3) and ~>1.10.0 (workspace 4). Both current-generation.",
       "versions": {
         "1.9.6": ["ws-aa1bbf21273d", "ws-e2ab44612647", "ws-8c168b8f9329"],
@@ -41,20 +32,24 @@
       }
     },
     "active_workspaces": {
-      "score": 1,
-      "max": 3,
       "detail": "3/4 workspaces (75%) active in last 90 days. ws-cdfaef0fb16a last run was 2025-08-29.",
       "active": ["ws-aa1bbf21273d", "ws-e2ab44612647", "ws-8c168b8f9329"],
       "stale": ["ws-cdfaef0fb16a"]
     }
   },
-  "findings": [
-    "STRENGTH: 88.2% overall run success rate - healthy operational posture",
-    "STRENGTH: Workspaces 1-3 operate with near-perfect reliability and consistent weekly cadence",
-    "STRENGTH: Modern Terraform versions (1.9.x and 1.10.x) across all workspaces",
-    "GAP: ws-cdfaef0fb16a is stale (>5 months) with 50% error rate (4/8 errored) - needs investigation or cleanup",
-    "GAP: 25% of workspaces are inactive - drags down operational health metrics",
-    "RECOMMENDATION: Investigate errors in ws-cdfaef0fb16a - fix configuration issues or decommission if no longer needed",
-    "RECOMMENDATION: Consider workspace lifecycle policy - auto-flag workspaces with no runs in 90 days"
+  "observations": [
+    "88.2% overall run success rate — healthy operational posture",
+    "Workspaces 1-3 operate with near-perfect reliability and consistent weekly cadence",
+    "ws-cdfaef0fb16a is stale (>5 months) with 50% error rate (4/8 errored) — needs investigation or cleanup",
+    "25% of workspaces are inactive — opportunity to implement workspace lifecycle management"
+  ],
+  "strengths": [
+    "88.2% overall run success rate — healthy operational posture",
+    "Workspaces 1-3 operate with near-perfect reliability and consistent weekly cadence",
+    "Modern Terraform versions (1.9.x and 1.10.x) across all workspaces"
+  ],
+  "opportunities": [
+    "Investigate errors in ws-cdfaef0fb16a — fix configuration issues or decommission if no longer needed",
+    "Consider workspace lifecycle policy — auto-flag workspaces with no runs in 90 days"
   ]
 }

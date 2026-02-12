@@ -1,35 +1,22 @@
 {
   "category": "Policy-as-Code",
-  "score": 0,
-  "max_score": 25,
-  "percentage": 0,
-  "stage": "Early",
+  "maturity_stage": "Adopt",
   "evaluation_date": "2026-02-08",
   "metrics": {
     "policy_set_count": {
-      "score": 0,
-      "max": 5,
       "detail": "0 policy sets configured. Complete greenfield for governance."
     },
     "policy_coverage": {
-      "score": 0,
-      "max": 5,
-      "detail": "0% workspace coverage - no policy sets means no workspaces are governed"
+      "detail": "0% workspace coverage — no policy sets means no workspaces are governed"
     },
     "enforcement_levels": {
-      "score": 0,
-      "max": 5,
-      "detail": "N/A - no policies to evaluate enforcement levels"
+      "detail": "N/A — no policies to evaluate enforcement levels"
     },
     "policy_categories": {
-      "score": 0,
-      "max": 5,
       "detail": "No policy categories present. Missing: security, cost, compliance, tagging, operational"
     },
     "policy_check_pass_rates": {
-      "score": 0,
-      "max": 5,
-      "detail": "N/A - no policy checks have ever been executed"
+      "detail": "N/A — no policy checks have ever been executed"
     }
   },
   "gap_analysis": {
@@ -40,26 +27,26 @@
         "name": "CIS Policy Set for AWS Terraform",
         "source": "hashicorp/cis-policy-set-aws",
         "effort": "2-4 hours",
-        "impact": "High - immediate security baseline",
+        "impact": "High — immediate security baseline",
         "recommendation": "Deploy in advisory mode first, then promote to hard-mandatory"
       },
       {
         "name": "AWS Foundational Policies",
         "source": "hashicorp/aws-foundational-policies",
         "effort": "2-4 hours",
-        "impact": "Medium - foundational cloud governance"
+        "impact": "Medium — foundational cloud governance"
       },
       {
         "name": "CIS Policy Set for Azure Terraform",
         "source": "hashicorp/cis-policy-set-azure",
         "effort": "2-4 hours",
-        "impact": "High - if Azure workloads are planned"
+        "impact": "High — if Azure workloads are planned"
       },
       {
         "name": "CIS Policy Set for GCP Terraform",
         "source": "hashicorp/cis-policy-set-gcp",
         "effort": "2-4 hours",
-        "impact": "High - if GCP workloads are planned"
+        "impact": "High — if GCP workloads are planned"
       }
     ],
     "custom_policies_needed": [
@@ -72,14 +59,14 @@
       },
       {
         "gap": "Terraform Version Pinning Policy",
-        "reason": "Mixed TF versions (1.9.6 and ~>1.10.0) - policy can enforce consistency",
+        "reason": "Mixed TF versions (1.9.6 and ~>1.10.0) — policy can enforce consistency",
         "priority": "Low",
         "effort": "1-2 days",
         "impact": "Version consistency, prevent drift"
       },
       {
         "gap": "Cost Control Policies",
-        "reason": "No FinOps guardrails - no cost-limiting policies",
+        "reason": "No FinOps guardrails — no cost-limiting policies",
         "priority": "Medium",
         "effort": "1-2 weeks",
         "impact": "Budget protection, resource right-sizing"
@@ -95,12 +82,15 @@
       "7. Promote critical policies to hard-mandatory (Month 3)"
     ]
   },
-  "findings": [
-    "CRITICAL GAP: Zero policy sets deployed - no governance, compliance, or security guardrails",
-    "CRITICAL GAP: Zero policy coverage - 100% of workspaces operate without any policy checks",
-    "OPPORTUNITY: This demo platform should showcase TFC governance capabilities to customers",
-    "OPPORTUNITY: Registry-available CIS benchmark policies can be deployed in <4 hours",
-    "RECOMMENDATION: Start with advisory enforcement to build confidence, then promote to mandatory",
-    "CONTEXT: 70%+ of TFC organizations have zero policies initially - this is the primary maturity opportunity"
+  "observations": [
+    "Zero policy sets deployed — no governance, compliance, or security guardrails in place",
+    "100% of workspaces operate without any policy checks",
+    "70%+ of TFC organizations have zero policies initially — this is the primary maturity advancement opportunity"
+  ],
+  "strengths": [],
+  "opportunities": [
+    "This platform should showcase TFC governance capabilities to customers",
+    "Registry-available CIS benchmark policies can be deployed in under 4 hours",
+    "Start with advisory enforcement to build confidence, then promote to mandatory"
   ]
 }

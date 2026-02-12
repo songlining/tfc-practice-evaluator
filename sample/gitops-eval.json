@@ -1,14 +1,9 @@
 {
   "category": "GitOps & VCS",
-  "score": 21,
-  "max_score": 25,
-  "percentage": 84,
-  "stage": "Standardize",
+  "maturity_stage": "Standardize",
   "evaluation_date": "2026-02-08",
   "metrics": {
     "vcs_integration": {
-      "score": 8,
-      "max": 8,
       "detail": "4/4 workspaces (100%) have VCS repositories connected",
       "workspaces": {
         "ws-aa1bbf21273d": "repo-0038c66606b1 (acme-corp/terraform-workspaces-config)",
@@ -18,13 +13,9 @@
       }
     },
     "speculative_plans": {
-      "score": 4,
-      "max": 4,
       "detail": "4/4 workspaces (100%) have speculative_enabled=true"
     },
     "vcs_triggered_runs": {
-      "score": 1,
-      "max": 5,
       "detail": "Only 4/68 runs (5.9%) are VCS-triggered (source: tfe-configuration-version). All 4 VCS-triggered runs originate from ws-cdfaef0fb16a. Workspaces 1-3 use tfe-api source exclusively (API-driven architecture).",
       "breakdown": {
         "tfe-api": 60,
@@ -34,22 +25,24 @@
       }
     },
     "auto_apply": {
-      "score": 4,
-      "max": 4,
       "detail": "3/4 workspaces (75%) have auto_apply=true. ws-cdfaef0fb16a has auto_apply=false (appropriate for its VCS-triggered workflow)."
     },
     "remote_execution": {
-      "score": 4,
-      "max": 4,
       "detail": "4/4 workspaces (100%) use execution_mode=remote"
     }
   },
-  "findings": [
-    "STRENGTH: 100% VCS integration - all 4 workspaces connected to version-controlled repositories",
-    "STRENGTH: 100% speculative plans enabled - full PR-based review workflow capability",
-    "STRENGTH: 100% remote execution - consistent execution environment across all workspaces",
-    "GAP: Only 5.9% of runs are VCS-triggered (4/68). Workspaces 1-3 rely entirely on tfe-api source, indicating external CI/CD orchestration or manual API triggers rather than native VCS-driven workflows",
-    "OBSERVATION: API-driven run architecture (ws-aa1bbf21273d, ws-e2ab44612647, ws-8c168b8f9329) is an intentional pattern for demo automation, not a deficiency",
-    "OPPORTUNITY: Enable VCS-triggered runs on workspaces 1-3 to demonstrate native GitOps workflow to customers"
+  "observations": [
+    "100% VCS integration - all 4 workspaces connected to version-controlled repositories",
+    "Only 5.9% of runs are VCS-triggered (4/68) - workspaces 1-3 rely entirely on tfe-api source, indicating external CI/CD orchestration or manual API triggers",
+    "API-driven run architecture (ws-aa1bbf21273d, ws-e2ab44612647, ws-8c168b8f9329) is an intentional pattern for demo automation, not a deficiency"
+  ],
+  "strengths": [
+    "100% VCS integration - all 4 workspaces connected to version-controlled repositories",
+    "100% speculative plans enabled - full PR-based review workflow capability",
+    "100% remote execution - consistent execution environment across all workspaces"
+  ],
+  "opportunities": [
+    "Enable VCS-triggered runs on workspaces 1-3 to demonstrate native GitOps workflow to customers",
+    "Low VCS-triggered run rate (5.9%) indicates room to shift from API-driven to VCS-driven workflows"
   ]
 }
